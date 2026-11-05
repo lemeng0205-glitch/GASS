@@ -55,7 +55,7 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
   return (
     // 寬度：不超過視窗，也不讓整張圖高過「視窗高度 − 標題與按鈕區」，所以一個畫面放得下
     <div className="relative mx-auto"
-         style={{ width: 'min(100%, calc((100svh - 380px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
+         style={{ width: 'min(100%, calc((100svh - 520px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
       <svg viewBox={`0 0 ${W} ${VB_H}`} className="absolute inset-0 h-full w-full" role="img"
            aria-label={lang === 'en' ? 'World map of service regions' : '服務地區世界地圖'}>
         <defs>
@@ -65,7 +65,7 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
           </linearGradient>
         </defs>
         {dots.map((d, i) => (
-          <circle key={i} cx={d.x} cy={d.y} r={1.9 + d.t * 0.8}
+          <circle key={i} cx={d.x} cy={d.y} r={1.6 + d.t * 0.7}
                   fill={d.t > 0 ? 'var(--accent)' : 'var(--dot)'}
                   fillOpacity={d.t > 0 ? 0.22 + 0.6 * d.t * d.t : 1} />
         ))}

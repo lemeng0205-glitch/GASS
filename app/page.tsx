@@ -19,7 +19,7 @@ export default async function Home({ searchParams }: Props) {
     <>
       <PortalHeader lang={lang} path="/" />
       <main className="flex min-h-[calc(100svh-57px)] flex-col">
-        <section className="px-5 pt-10 text-center sm:pt-14">
+        <section className="px-5 pt-12 text-center sm:pt-16">
           <p className="eyebrow fade-up">Global Service &amp; Warranty</p>
           <h1 className="fade-up d1 mx-auto mt-4 max-w-4xl text-balance text-[clamp(26px,4.4vw,52px)] font-light leading-[1.15] tracking-[0.02em]">
             <span className="gold-text">{COPY.heroTitle[lang]}</span>
@@ -27,7 +27,7 @@ export default async function Home({ searchParams }: Props) {
           <p className="fade-up d2 mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[var(--soft)] sm:text-[15px]">{COPY.heroSub[lang]}</p>
         </section>
 
-        <div className="fade-up d3 flex flex-1 items-center py-4 sm:py-6">
+        <div className="fade-up d3 flex flex-1 items-center py-8 sm:py-12">
           <WorldMap regions={REGIONS} lang={lang} comingSoon={COPY.comingSoon[lang]} />
         </div>
 
