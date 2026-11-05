@@ -1,0 +1,117 @@
+// ================================================
+// v0.1.0 | 2026-11-04 | 獨立網站設定（從 ERP 草稿 feature/portal v0.2.0 搬出）
+// ------------------------------------------------
+// Changelog:
+//   v0.1.0 (2026-11-04) - 脫離 ERP：移除資料庫讀取；說明書一律連到 ERP 媒體庫的公開連結 /m/<編號>
+//                         新增美國／海外頁、一鍵複製訂單資訊
+//
+// 本網站不含資料庫、不含任何 ERP 金鑰。所有連結都是公開網址。
+// ⚠ 保固登錄頁目前仍在 WordPress（eipstore.online），WordPress 預計 2027/1 底關閉，
+//   關站前需改連新頁面（改下方 WARRANTY_TW / WARRANTY_GLOBAL 即可）。
+// ================================================
+
+export type PortalLang = 'zh' | 'en'
+export type L10n = Record<PortalLang, string>
+
+export const pickLang = (v: string | string[] | undefined): PortalLang => (v === 'en' ? 'en' : 'zh')
+
+/** 說明書所在位置（ERP 媒體庫的公開連結；若日後換網域，只改這一行） */
+export const MEDIA_BASE = 'https://lemeng-erp.vercel.app'
+export const manualUrl = (slug: string) => `${MEDIA_BASE}/m/${slug}`
+
+export interface PortalRegion {
+  code: string
+  name: L10n
+  lon: number
+  lat: number
+  href: string | null    // null = 即將推出
+}
+
+export const REGIONS: PortalRegion[] = [
+  { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },   lon: 121,  lat: 23.7, href: '/tw' },
+  { code: 'jp', name: { zh: '日本', en: 'Japan' },    lon: 138,  lat: 36,   href: null },
+  { code: 'na', name: { zh: '北美／海外', en: 'North America / International' }, lon: -100, lat: 40, href: '/us' },
+  { code: 'eu', name: { zh: '歐洲', en: 'Europe' },   lon: 10,   lat: 50,   href: null },
+]
+export const OTHER_REGION: { name: L10n; href: string | null } = {
+  name: { zh: '其他國家／地區', en: 'Other countries / regions' },
+  href: null,
+}
+
+export const COPY = {
+  brand:      { zh: 'eiP 全球售後服務', en: 'eiP Global Service' },
+  heroTitle:  { zh: '在世界任何地方，都安心使用', en: 'Peace of mind, wherever you are' },
+  heroSub:    { zh: '選擇您的所在地區，取得產品說明書、保固登錄與售後服務。', en: 'Choose your region for manuals, warranty registration and support.' },
+  pickRegion: { zh: '選擇地區', en: 'Choose your region' },
+  comingSoon: { zh: '即將推出', en: 'Coming soon' },
+  manuals:    { zh: '產品說明書', en: 'Product manuals' },
+  openManual: { zh: '使用說明書', en: 'Manual' },
+  backGlobal: { zh: '← 選擇其他地區', en: '← Other regions' },
+  twTitle:    { zh: '台灣售後服務中心', en: 'Taiwan Service Center' },
+  twSub:      { zh: '說明書、保固登錄與常用資源都在這裡。', en: 'Manuals, warranty registration and resources.' },
+  usTitle:    { zh: '北美／海外售後服務中心', en: 'North America / International Service Center' },
+  usSub:      { zh: '說明書、保固登錄與常見問題。', en: 'Manuals, warranty registration and FAQ.' },
+} satisfies Record<string, L10n>
+
+export const COPY_ORDER = {
+  title:     { zh: '聯絡客服前：一鍵複製訂單資訊', en: 'Before contacting support: copy your order info' },
+  sub:       { zh: '填好後按複製，再貼給客服，可以加快處理。這些資料只留在您的瀏覽器，不會上傳。',
+               en: 'Fill in, copy, and paste it to our support team to speed things up. Nothing is uploaded; it stays in your browser.' },
+  orderNo:   { zh: '訂單編號', en: 'Order number' },
+  orderDate: { zh: '訂單日期', en: 'Order date' },
+  item:      { zh: '品項', en: 'Product' },
+  pick:      { zh: '請選擇品項', en: 'Select a product' },
+  copy:      { zh: '複製訂單資訊', en: 'Copy order info' },
+  copied:    { zh: '已複製 ✓', en: 'Copied ✓' },
+  manual:    { zh: '無法自動複製，請手動選取上方文字複製。', en: 'Could not copy automatically. Please select the text above and copy it.' },
+} satisfies Record<string, L10n>
+
+export interface QuickLink { key: string; label: L10n; desc: L10n; href: string }
+
+export const WARRANTY_TW = 'https://eipstore.online/2025%e4%bf%9d%e5%9b%ba%e9%a0%81/'
+export const WARRANTY_GLOBAL = 'https://eipstore.online/warranty_registration_global'
+
+export const TW_LINKS: QuickLink[] = [
+  { key: 'warranty',  label: { zh: '保固登錄', en: 'Warranty registration' },
+    desc: { zh: '登錄您的產品以享保固服務', en: 'Register your product' }, href: WARRANTY_TW },
+  { key: 'manuals',   label: { zh: '產品說明書', en: 'Product manuals' },
+    desc: { zh: '鍵盤保護殼、觸控筆說明書', en: 'Keyboard cases & styluses' }, href: '#manuals' },
+  { key: 'templates', label: { zh: '電子模板', en: 'Digital templates' },
+    desc: { zh: '下載筆記與繪圖模板', en: 'Download templates' },
+    href: 'https://drive.google.com/drive/folders/1JN4Xs6zi2_UPslaKUG1EZeAZMq-cewsi' },
+  { key: 'community', label: { zh: 'Facebook 私密社團', en: 'Facebook community' },
+    desc: { zh: '使用技巧與玩家交流', en: 'Tips & community' }, href: 'https://eipstore.net/penlemengvip' },
+]
+
+export const US_LINKS: QuickLink[] = [
+  { key: 'warranty', label: { zh: '保固登錄', en: 'Warranty registration' },
+    desc: { zh: '登錄您的產品以享保固服務', en: 'Register your product' }, href: WARRANTY_GLOBAL },
+  { key: 'manuals',  label: { zh: '產品說明書', en: 'Product manuals' },
+    desc: { zh: '鍵盤保護殼、觸控筆說明書', en: 'Keyboard cases & styluses' }, href: '#manuals' },
+  { key: 'faq',      label: { zh: '常見問題', en: 'FAQ' },
+    desc: { zh: '常見問題與解答', en: 'Frequently asked questions' }, href: 'https://www.penoval.com/en/blogs/faq' },
+]
+
+export type ProductLine = 'keyboard' | 'stylus'
+export const PRODUCT_LINES: Array<{ key: ProductLine; label: L10n }> = [
+  { key: 'stylus',   label: { zh: '觸控筆', en: 'Styluses' } },
+  { key: 'keyboard', label: { zh: '鍵盤保護殼', en: 'Keyboard cases' } },
+]
+
+export interface PortalProduct { slug: string; name: string; line: ProductLine }
+
+// slug = 媒體庫連結編號；圖片 = public/portal/products/<slug>.png
+export const PRODUCTS: PortalProduct[] = [
+  { slug: 'eip-pencil-2-halo', name: 'eiP Pencil 2',                     line: 'stylus' },
+  { slug: 'pencil-x-classic',  name: 'eiP Pencil X Classic（鉛筆款）',    line: 'stylus' },
+  { slug: 'pencil-x',          name: 'eiP Pencil X',                     line: 'stylus' },
+  { slug: 'pencil-pro',        name: 'eiP Pencil Pro',                   line: 'stylus' },
+  { slug: 'pencil',            name: 'eiP Pencil',                       line: 'stylus' },
+  { slug: 'mpp-stylus-pro',    name: 'eiP MPP Stylus Pro',               line: 'stylus' },
+  { slug: 's2',                name: 'eiP S2',                           line: 'stylus' },
+  { slug: 'hyperkeys',         name: 'HyperKeys 智定義鍵盤',              line: 'keyboard' },
+  { slug: 'magnetix-2',        name: 'Magnetix 2 鍵盤保護殼',             line: 'keyboard' },
+  { slug: 'magnetix-quick',    name: 'Magnetix 鍵盤保護殼（快捷版）',      line: 'keyboard' },
+  { slug: 'maglite-2',         name: 'Maglite 2 鍵盤保護殼',              line: 'keyboard' },
+  { slug: 'maglite-2-hp',      name: 'Maglite 2 劫盜地圖 哈利波特聯名款',  line: 'keyboard' },
+]

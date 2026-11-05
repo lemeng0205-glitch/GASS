@@ -1,0 +1,49 @@
+/* v0.4.0 | 2026-11-04 | 淺色高級簡約：暖米白底 + eiP 灰褐點綴（沿用說明書淺色色票 #f3f2ef / #45423e / #8c7f68）
+   v0.3.0 深色簡約（已改為淺色）；v0.2.x 深色 + 毛玻璃（已簡化） */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --bg:#f3f2ef; --card:#ffffff; --ink:#45423e; --soft:#7a756e; --rule:#e2ded7;
+  --accent:#8c7f68; --accent-ink:#fbf8f2; --dot:#dcd7ce; --muted:#b9b4ac;
+  color-scheme:light;
+}
+
+html{background:var(--bg)}
+body{
+  color:var(--ink);
+  background:var(--bg);
+  font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* 標題維持純淨的深灰，不用漸層（保留 class 名稱供元件沿用） */
+.gold-text{color:var(--ink)}
+
+/* 白色卡片：只有一條細線，沒有陰影與模糊 */
+.glass{background:var(--card);border:1px solid var(--rule)}
+.glass-hover{transition:border-color .3s, box-shadow .3s}
+.glass-hover:hover{border-color:var(--accent);box-shadow:0 14px 34px -22px rgba(69,66,62,.35)}
+
+.btn-gold{background:var(--accent);color:var(--accent-ink);transition:background-color .25s}
+.btn-gold:hover{background:#776b56}
+
+.eyebrow{letter-spacing:.34em;text-transform:uppercase;font-size:11px;color:var(--accent)}
+
+/* 產品圖底座：暖米白，與白色卡片分出層次 */
+.plinth{background:#f7f5f1}
+
+/* 地圖：連線為靜態細線；只有脈動圈保留一點呼吸感 */
+.map-arc{opacity:.8}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.8}100%{transform:scale(3);opacity:0}}
+.map-pulse{animation:pulse-ring 3.2s cubic-bezier(.2,.6,.3,1) infinite}
+
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-up{animation:fade-up .9s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.26s}.d4{animation-delay:.36s}
+
+@media (prefers-reduced-motion: reduce){
+  .map-pulse,.fade-up{animation:none}
+  .glass-hover,.btn-gold{transition:none}
+}
