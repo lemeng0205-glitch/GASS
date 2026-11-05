@@ -75,7 +75,8 @@ export default function WarrantyForm({ lang }: { lang: PortalLang }) {
         <label className={`${label} sm:col-span-2`}>{t('product')}
           <select name="product" required defaultValue="" className={field}>
             <option value="" disabled>{t('pick')}</option>
-            {PRODUCTS.map(p => <option key={p.slug} value={p.name}>{p.name}</option>)}
+            {/* 自建保固登錄只服務台灣；海外走 Johnny 系統 */}
+            {PRODUCTS.filter(p => p.markets.includes('tw')).map(p => <option key={p.slug} value={p.name}>{p.name}</option>)}
           </select>
         </label>
         <label className={label}>{t('channel')}

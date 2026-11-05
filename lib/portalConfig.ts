@@ -14,30 +14,41 @@
 export type PortalLang = 'zh' | 'en'
 export type L10n = Record<PortalLang, string>
 
-export const pickLang = (v: string | string[] | undefined): PortalLang => (v === 'en' ? 'en' : 'zh')
+/** 網址 ?lang=zh|en 優先；沒帶時用該頁預設（台灣頁中文、海外頁英文） */
+export const pickLang = (v: string | string[] | undefined, fallback: PortalLang = 'zh'): PortalLang =>
+  v === 'en' ? 'en' : v === 'zh' ? 'zh' : fallback
 
 /** 說明書所在位置（ERP 媒體庫的公開連結；若日後換網域，只改這一行） */
 export const MEDIA_BASE = 'https://lemeng-erp.vercel.app'
 export const manualUrl = (slug: string) => `${MEDIA_BASE}/m/${slug}`
+
+/** 兩條軌道：台灣（自建、中文說明書）／海外（英文說明書，所有海外地區同一套） */
+export type Track = 'tw' | 'intl'
 
 export interface PortalRegion {
   code: string
   name: L10n
   lon: number
   lat: number
-  href: string | null    // null = 即將推出
+  href: string | null    // null = 地圖上只顯示、不可點
+  track: Track
 }
 
+// 地圖上的釘點：台灣進台灣頁；其他地點全部進同一個海外頁。
+// 只標示有銷售或客服管道的地區（標得越多，消費者越會當成「這裡有保固」）。
 export const REGIONS: PortalRegion[] = [
-  { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },   lon: 121,  lat: 23.7, href: '/tw' },
-  { code: 'jp', name: { zh: '日本', en: 'Japan' },    lon: 138,  lat: 36,   href: null },
-  { code: 'na', name: { zh: '北美／海外', en: 'North America / International' }, lon: -100, lat: 40, href: '/us' },
-  { code: 'eu', name: { zh: '歐洲', en: 'Europe' },   lon: 10,   lat: 50,   href: null },
+  { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },        lon: 121,  lat: 23.7, href: '/tw', track: 'tw' },
+  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 138,  lat: 36,   href: '/us', track: 'intl' },
+  { code: 'na', name: { zh: '北美', en: 'North America' }, lon: -100, lat: 40,   href: '/us', track: 'intl' },
+  { code: 'eu', name: { zh: '歐洲', en: 'Europe' },        lon: 10,   lat: 50,   href: '/us', track: 'intl' },
+  { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/us', track: 'intl' },
 ]
-export const OTHER_REGION: { name: L10n; href: string | null } = {
-  name: { zh: '其他國家／地區', en: 'Other countries / regions' },
-  href: null,
-}
+
+/** 首頁下方兩個大按鈕 */
+export const TRACKS: Array<{ key: Track; name: L10n; href: string }> = [
+  { key: 'tw',   name: { zh: '台灣', en: 'Taiwan' },          href: '/tw' },
+  { key: 'intl', name: { zh: '海外', en: 'International' },  href: '/us' },
+]
 
 export const COPY = {
   brand:      { zh: 'eiP 全球售後服務', en: 'eiP Global Service' },
@@ -47,10 +58,10 @@ export const COPY = {
   comingSoon: { zh: '即將推出', en: 'Coming soon' },
   manuals:    { zh: '產品說明書', en: 'Product manuals' },
   openManual: { zh: '使用說明書', en: 'Manual' },
-  backGlobal: { zh: '← 選擇其他地區', en: '← Other regions' },
+  backGlobal: { zh: '← 返回首頁', en: '← Back to home' },
   twTitle:    { zh: '台灣售後服務中心', en: 'Taiwan Service Center' },
   twSub:      { zh: '說明書、保固登錄與常用資源都在這裡。', en: 'Manuals, warranty registration and resources.' },
-  usTitle:    { zh: '北美／海外售後服務中心', en: 'North America / International Service Center' },
+  usTitle:    { zh: '海外售後服務中心', en: 'International Service Center' },
   usSub:      { zh: '說明書、保固登錄與常見問題。', en: 'Manuals, warranty registration and FAQ.' },
 } satisfies Record<string, L10n>
 

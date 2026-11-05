@@ -1,11 +1,11 @@
 'use client'
 // v0.2.0 | 2026-11-04 | 一鍵複製訂單資訊（高級質感樣式）：只在瀏覽器內組字串，不送出任何資料
 import { useMemo, useState } from 'react'
-import { COPY_ORDER, PRODUCTS, type PortalLang } from '@/lib/portalConfig'
+import { COPY_ORDER, PRODUCTS, type Market, type PortalLang } from '@/lib/portalConfig'
 
 const field = 'mt-2 w-full rounded-xl border border-[var(--rule)] bg-[var(--bg)] px-3.5 py-2.5 text-[15px] text-[var(--ink)] outline-none transition-colors focus:border-[var(--accent)]'
 
-export default function CopyOrderInfo({ lang }: { lang: PortalLang }) {
+export default function CopyOrderInfo({ lang, market }: { lang: PortalLang; market: Market }) {
   const [orderNo, setOrderNo] = useState('')
   const [orderDate, setOrderDate] = useState('')
   const [item, setItem] = useState('')
@@ -45,7 +45,10 @@ export default function CopyOrderInfo({ lang }: { lang: PortalLang }) {
         <label className="text-[12px] font-medium tracking-wider text-[var(--soft)]">{L('item')}
           <select className={field} value={item} onChange={e => { setItem(e.target.value); setState('idle') }}>
             <option value="">{L('pick')}</option>
-            {PRODUCTS.map(p => <option key={p.slug} value={p.name}>{p.name}</option>)}
+            {PRODUCTS.filter(p => p.markets.includes(market)).map(p => {
+              const n = lang === 'en' && p.nameEn ? p.nameEn : p.name
+              return <option key={p.slug} value={n}>{n}</option>
+            })}
           </select>
         </label>
       </div>

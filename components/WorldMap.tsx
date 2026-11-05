@@ -15,12 +15,13 @@ interface Props {
   regions:    PortalRegion[]
   lang:       PortalLang
   comingSoon: string
+  explicitLang?: boolean
 }
 
 const GLOW_RADIUS = 230
 const VB_H = H - 40
 
-export default function WorldMap({ regions, lang, comingSoon }: Props) {
+export default function WorldMap({ regions, lang, comingSoon, explicitLang = false }: Props) {
   const pins = regions.map(rg => ({ rg, ...project(rg.lon, rg.lat), live: !!rg.href }))
   const live = pins.filter(p => p.live)
 
@@ -50,7 +51,8 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
       })
     : []
 
-  const q = lang === 'en' ? '?lang=en' : ''
+  // 只有使用者明確選過語言才帶進去；否則各軌道用自己的預設（台灣中文、海外英文）
+  const q = explicitLang ? `?lang=${lang}` : ''
 
   return (
     // 寬度：不超過視窗，也不讓整張圖高過「視窗高度 − 標題與按鈕區」，所以一個畫面放得下
@@ -88,7 +90,7 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
           <>
             {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" />}
             {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" style={{ animationDelay: '1.6s' }} />}
-            <span aria-hidden className={`relative h-3 w-3 rounded-full border-[3px] border-[var(--card)] ring-1 ${isLive ? 'bg-[var(--accent)] ring-[var(--accent)]' : 'bg-[var(--muted)] ring-[var(--muted)]'}`} />
+            <span aria-hidden className={`pin-dot relative h-3 w-3 rounded-full border-[3px] border-[var(--card)] ring-1 ${isLive ? 'bg-[var(--accent)] ring-[var(--accent)]' : 'bg-[var(--muted)] ring-[var(--muted)]'}`} />
             <span className={`pin-label pointer-events-none absolute bottom-full mb-2 hidden whitespace-nowrap rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.12em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--soft)]'}`}>
               {label}
             </span>
@@ -96,7 +98,7 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
         )
         const cls = 'absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center'
         return isLive
-          ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} className={cls} style={pos}>{inner}</Link>
+          ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} data-track={rg.track} className={cls} style={pos}>{inner}</Link>
           : <span key={rg.code} title={comingSoon} className={cls} style={pos}>{inner}</span>
       })}
     </div>

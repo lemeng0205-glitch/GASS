@@ -44,6 +44,15 @@ body{
 .pin-label{background:rgba(255,255,255,.88);border:1px solid var(--rule);box-shadow:0 6px 16px -10px rgba(69,66,62,.45);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 
+/* 首頁兩條軌道（台灣／海外）：滑過地圖上任一釘點或下方按鈕，同軌道的釘點與按鈕一起亮起 */
+.pin-dot{transition:transform .25s}
+.track-home:has([data-track="tw"]:hover) [data-track="tw"] .pin-dot,
+.track-home:has([data-track="intl"]:hover) [data-track="intl"] .pin-dot{transform:scale(1.45)}
+.track-home:has([data-track="tw"]:hover) [data-track="tw"] .pin-label,
+.track-home:has([data-track="intl"]:hover) [data-track="intl"] .pin-label{border-color:var(--accent)}
+.track-home:has([data-track="tw"]:hover) .track-btn[data-track="tw"],
+.track-home:has([data-track="intl"]:hover) .track-btn[data-track="intl"]{background:#776b56;transform:translateY(-1px)}
+
 /* 標題與副標之間的細線 */
 .hairline{display:block;width:44px;height:1px;background:var(--accent);opacity:.55}
 

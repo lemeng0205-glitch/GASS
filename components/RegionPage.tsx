@@ -12,7 +12,7 @@ export default function RegionPage(props: {
   lang: PortalLang; path: string; market: Market; title: L10n; sub: L10n; links: QuickLink[]
 }) {
   const { lang, path, market, title, sub, links } = props
-  const q = lang === 'en' ? '?lang=en' : ''
+  const q = `?lang=${lang}`
   return (
     <>
       <PortalHeader lang={lang} path={path} />
@@ -46,7 +46,7 @@ export default function RegionPage(props: {
           })}
         </section>
 
-        <CopyOrderInfo lang={lang} />
+        <CopyOrderInfo lang={lang} market={market} />
 
         <section id="manuals" className="mt-20 scroll-mt-24">
           <h2 className="eyebrow">{COPY.manuals[lang]}</h2>
