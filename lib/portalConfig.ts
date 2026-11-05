@@ -32,16 +32,22 @@ export interface PortalRegion {
   lat: number
   href: string | null    // null = 地圖上只顯示、不可點
   track: Track
+  hoverLabel?: true      // 地點太密集時，標籤只在滑過時顯示（避免文字互相蓋住）
 }
 
 // 地圖上的釘點：台灣進台灣頁；其他地點全部進同一個海外頁。
 // 只標示有銷售或客服管道的地區（標得越多，消費者越會當成「這裡有保固」）。
 export const REGIONS: PortalRegion[] = [
   { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },        lon: 121,  lat: 23.7, href: '/tw', track: 'tw' },
-  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 138,  lat: 36,   href: '/us', track: 'intl' },
-  { code: 'na', name: { zh: '北美', en: 'North America' }, lon: -100, lat: 40,   href: '/us', track: 'intl' },
-  { code: 'eu', name: { zh: '歐洲', en: 'Europe' },        lon: 10,   lat: 50,   href: '/us', track: 'intl' },
+  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 139,  lat: 36,   href: '/us', track: 'intl' },
+  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/us', track: 'intl', hoverLabel: true },
+  { code: 'sg', name: { zh: '新加坡', en: 'Singapore' },   lon: 104,  lat: 1.3,  href: '/us', track: 'intl' },
   { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/us', track: 'intl' },
+  { code: 'us', name: { zh: '美國', en: 'United States' }, lon: -98,  lat: 39,   href: '/us', track: 'intl' },
+  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/us', track: 'intl' },
+  { code: 'gb', name: { zh: '英國', en: 'United Kingdom' }, lon: -2,   lat: 54,   href: '/us', track: 'intl' },
+  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/us', track: 'intl', hoverLabel: true },
+  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', hoverLabel: true },
 ]
 
 /** 首頁下方兩個大按鈕 */

@@ -34,7 +34,8 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
         let t = 0
         for (const p of live) {
           const d = Math.hypot(x - p.x, y - p.y)
-          t = Math.max(t, Math.max(0, 1 - d / GLOW_RADIUS))
+          // 台灣為主角；海外地點只有淡淡的光暈，點多了才不會整張地圖糊成一片
+          t = Math.max(t, Math.max(0, 1 - d / (p.rg.track === 'tw' ? GLOW_RADIUS : GLOW_RADIUS * 0.5)) * (p.rg.track === 'tw' ? 1 : 0.5))
         }
         dots.push({ x, y, t })
       }
@@ -59,7 +60,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
     <div className="relative mx-auto"
          style={{ width: 'min(100%, calc((100svh - 540px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
       {/* 已開通地區底下的一團柔光 */}
-      {live.map(p => (
+      {live.filter(p => p.rg.track === 'tw').map(p => (
         <span key={`glow-${p.rg.code}`} aria-hidden className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
               style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / VB_H) * 100}%`, width: '26%', aspectRatio: '1',
                        background: 'radial-gradient(closest-side, rgba(140,127,104,.20), rgba(140,127,104,0))' }} />
@@ -84,6 +85,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
       </svg>
 
       {pins.map(({ rg, x, y, live: isLive }) => {
+        const hoverOnly = !!rg.hoverLabel
         const label = rg.name[lang]
         const pos = { left: `${(x / W) * 100}%`, top: `${(y / VB_H) * 100}%` }
         const inner = (
@@ -91,12 +93,14 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
             {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" />}
             {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" style={{ animationDelay: '1.6s' }} />}
             <span aria-hidden className={`pin-dot relative h-3 w-3 rounded-full border-[3px] border-[var(--card)] ring-1 ${isLive ? 'bg-[var(--accent)] ring-[var(--accent)]' : 'bg-[var(--muted)] ring-[var(--muted)]'}`} />
-            <span className={`pin-label pointer-events-none absolute bottom-full mb-2 hidden whitespace-nowrap rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.12em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--soft)]'}`}>
+            <span className={`pin-label pointer-events-none absolute bottom-full mb-2 hidden whitespace-nowrap rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.12em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--soft)]'} ${hoverOnly ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100' : ''}`}>
               {label}
             </span>
           </>
         )
-        const cls = 'absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center'
+        // 手機上地點挨得很近：海外釘點點擊範圍縮小，台灣放在最上層，避免點台灣卻被旁邊的點搶走
+        const cls = `group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center ${
+          rg.track === 'tw' ? 'z-10 h-11 w-11' : 'h-6 w-6 md:h-11 md:w-11'}`
         return isLive
           ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} data-track={rg.track} className={cls} style={pos}>{inner}</Link>
           : <span key={rg.code} title={comingSoon} className={cls} style={pos}>{inner}</span>
