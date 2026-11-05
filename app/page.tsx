@@ -1,9 +1,10 @@
-// v0.4.0 | 2026-11-05 | 首頁改為兩條軌道：台灣／海外。地圖顯示海外各地，點進去都是同一個海外頁；語言依瀏覽器判斷
+// v0.5.0 | 2026-11-05 | 下方改為「台灣」大按鈕 + 各國小按鈕（日本、美國…全部進同一個海外頁），滑過國家按鈕時地圖對應的點亮起
+// v0.4.0 | 2026-11-05 | 首頁兩條軌道：台灣／海外。地圖顯示海外各地；語言依瀏覽器判斷
 // v0.3.0 | 2026-11-05 | 地圖滿版無框、一個畫面放得下
 // 保固承諾區塊：正式條款未提供前不顯示（避免公開頁出現「待提供」字樣）。
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { COPY, REGIONS, TRACKS, pickLang } from '@/lib/portalConfig'
+import { COPY, REGIONS, OTHER_REGION, pickLang } from '@/lib/portalConfig'
 import PortalHeader from '@/components/PortalHeader'
 import WorldMap from '@/components/WorldMap'
 
@@ -17,8 +18,19 @@ export default async function Home({ searchParams }: Props) {
   const lang = pickLang(param, /^zh/i.test(accept.trim()) ? 'zh' : 'en')
   const q = explicitLang ? `?lang=${lang}` : ''
 
+  const taiwan = REGIONS.find(r => r.track === 'tw')!
+  const countries = REGIONS.filter(r => r.track === 'intl')
+
+  // 滑過某國按鈕 ↔ 地圖上同一個國家的點，彼此呼應（只有常數代碼，沒有使用者輸入）
+  const hoverCss = countries.map(c =>
+    `.track-home:has(.pill[data-code="${c.code}"]:hover) .pin[data-code="${c.code}"] .pin-dot{transform:scale(1.6)}` +
+    `.track-home:has(.pill[data-code="${c.code}"]:hover) .pin[data-code="${c.code}"] .pin-label{opacity:1;border-color:var(--accent)}` +
+    `.track-home:has(.pin[data-code="${c.code}"]:hover) .pill[data-code="${c.code}"]{border-color:var(--accent);background:#fff;transform:translateY(-1px)}`
+  ).join('')
+
   return (
     <>
+      <style>{hoverCss}</style>
       <PortalHeader lang={lang} path="/" />
       <main className="track-home hero-glow flex min-h-[calc(100svh-57px)] flex-col">
         <section className="px-5 pt-12 text-center sm:pt-16">
@@ -40,17 +52,31 @@ export default async function Home({ searchParams }: Props) {
             <h2 className="eyebrow">{COPY.pickRegion[lang]}</h2>
             <span aria-hidden className="h-px flex-1 bg-[var(--rule)]" />
           </div>
-          <ul className="mx-auto grid max-w-md grid-cols-2 gap-3 md:max-w-xl md:gap-4">
-            {TRACKS.map(t => (
-              <li key={t.key}>
-                <Link href={`${t.href}${q}`} data-track={t.key}
-                      className="track-btn btn-gold group flex h-14 items-center justify-between gap-3 rounded-full px-6 text-[15px] font-semibold tracking-wider">
-                  {t.name[lang]}
-                  <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+
+          <div className="mx-auto flex max-w-4xl flex-col items-center gap-4">
+            <Link href={`${taiwan.href}${q}`} data-track="tw"
+                  className="track-btn btn-gold group flex h-14 w-full max-w-xs items-center justify-between gap-3 rounded-full px-7 text-[15px] font-semibold tracking-wider">
+              {taiwan.name[lang]}
+              <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+            </Link>
+
+            <ul className="flex flex-wrap justify-center gap-2.5">
+              {countries.map(c => (
+                <li key={c.code}>
+                  <Link href={`${c.href}${q}`} data-code={c.code}
+                        className="pill track-pill flex h-11 items-center rounded-full px-5 text-[14px] font-medium tracking-wider">
+                    {c.name[lang]}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href={`${OTHER_REGION.href}${q}`}
+                      className="track-pill flex h-11 items-center rounded-full px-5 text-[14px] font-medium tracking-wider text-[var(--soft)]">
+                  {OTHER_REGION.name[lang]}
                 </Link>
               </li>
-            ))}
-          </ul>
+            </ul>
+          </div>
         </section>
       </main>
       <footer className="border-t border-[var(--rule)] py-8 text-center text-[11px] tracking-[0.2em] text-[var(--muted)]">

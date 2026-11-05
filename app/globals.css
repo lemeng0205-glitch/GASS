@@ -53,6 +53,11 @@ body{
 .track-home:has([data-track="tw"]:hover) .track-btn[data-track="tw"],
 .track-home:has([data-track="intl"]:hover) .track-btn[data-track="intl"]{background:#776b56;transform:translateY(-1px)}
 
+/* 國家小按鈕（白底細框）；滑過時邊框與文字加深 */
+.track-pill{background:rgba(255,255,255,.7);border:1px solid var(--rule);color:var(--ink);
+  transition:border-color .25s, background-color .25s, transform .25s}
+.track-pill:hover{border-color:var(--accent);background:#fff;transform:translateY(-1px)}
+
 /* 標題與副標之間的細線 */
 .hairline{display:block;width:44px;height:1px;background:var(--accent);opacity:.55}
 

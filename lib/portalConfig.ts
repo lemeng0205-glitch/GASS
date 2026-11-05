@@ -50,11 +50,11 @@ export const REGIONS: PortalRegion[] = [
   { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', hoverLabel: true },
 ]
 
-/** 首頁下方兩個大按鈕 */
-export const TRACKS: Array<{ key: Track; name: L10n; href: string }> = [
-  { key: 'tw',   name: { zh: '台灣', en: 'Taiwan' },          href: '/tw' },
-  { key: 'intl', name: { zh: '海外', en: 'International' },  href: '/us' },
-]
+/** 首頁下方國家按鈕的最後一顆：沒列出的國家也進同一個海外頁 */
+export const OTHER_REGION: { name: L10n; href: string } = {
+  name: { zh: '其他國家／地區', en: 'Other countries / regions' },
+  href: '/us',
+}
 
 export const COPY = {
   brand:      { zh: 'eiP 全球售後服務', en: 'eiP Global Service' },

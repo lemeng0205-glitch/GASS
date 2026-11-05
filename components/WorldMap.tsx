@@ -58,7 +58,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
   return (
     // 寬度：不超過視窗，也不讓整張圖高過「視窗高度 − 標題與按鈕區」，所以一個畫面放得下
     <div className="relative mx-auto"
-         style={{ width: 'min(100%, calc((100svh - 540px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
+         style={{ width: 'min(100%, calc((100svh - 610px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
       {/* 已開通地區底下的一團柔光 */}
       {live.filter(p => p.rg.track === 'tw').map(p => (
         <span key={`glow-${p.rg.code}`} aria-hidden className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -102,7 +102,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
         const cls = `group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center ${
           rg.track === 'tw' ? 'z-10 h-11 w-11' : 'h-6 w-6 md:h-11 md:w-11'}`
         return isLive
-          ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} data-track={rg.track} className={cls} style={pos}>{inner}</Link>
+          ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} data-track={rg.track} data-code={rg.code} className={`pin ${cls}`} style={pos}>{inner}</Link>
           : <span key={rg.code} title={comingSoon} className={cls} style={pos}>{inner}</span>
       })}
     </div>
