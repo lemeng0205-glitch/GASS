@@ -55,8 +55,14 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
   return (
     // 寬度：不超過視窗，也不讓整張圖高過「視窗高度 − 標題與按鈕區」，所以一個畫面放得下
     <div className="relative mx-auto"
-         style={{ width: 'min(100%, calc((100svh - 520px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
-      <svg viewBox={`0 0 ${W} ${VB_H}`} className="absolute inset-0 h-full w-full" role="img"
+         style={{ width: 'min(100%, calc((100svh - 540px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
+      {/* 已開通地區底下的一團柔光 */}
+      {live.map(p => (
+        <span key={`glow-${p.rg.code}`} aria-hidden className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / VB_H) * 100}%`, width: '26%', aspectRatio: '1',
+                       background: 'radial-gradient(closest-side, rgba(140,127,104,.20), rgba(140,127,104,0))' }} />
+      ))}
+      <svg viewBox={`0 0 ${W} ${VB_H}`} className="map-fade absolute inset-0 h-full w-full" role="img"
            aria-label={lang === 'en' ? 'World map of service regions' : '服務地區世界地圖'}>
         <defs>
           <linearGradient id="arc" x1="0" x2="1" y1="0" y2="0">
@@ -81,9 +87,9 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
         const inner = (
           <>
             {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" />}
+            {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" style={{ animationDelay: '1.6s' }} />}
             <span aria-hidden className={`relative h-3 w-3 rounded-full border-[3px] border-[var(--card)] ring-1 ${isLive ? 'bg-[var(--accent)] ring-[var(--accent)]' : 'bg-[var(--muted)] ring-[var(--muted)]'}`} />
-            <span className={`pointer-events-none absolute bottom-full mb-1 hidden whitespace-nowrap text-[13px] font-medium tracking-[0.08em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--muted)]'}`}
-                  style={{ textShadow: '0 0 4px var(--bg), 0 0 4px var(--bg), 0 0 4px var(--bg)' }}>
+            <span className={`pin-label pointer-events-none absolute bottom-full mb-2 hidden whitespace-nowrap rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.12em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--soft)]'}`}>
               {label}
             </span>
           </>

@@ -18,13 +18,14 @@ export default async function Home({ searchParams }: Props) {
   return (
     <>
       <PortalHeader lang={lang} path="/" />
-      <main className="flex min-h-[calc(100svh-57px)] flex-col">
+      <main className="hero-glow flex min-h-[calc(100svh-57px)] flex-col">
         <section className="px-5 pt-12 text-center sm:pt-16">
           <p className="eyebrow fade-up">Global Service &amp; Warranty</p>
           <h1 className="fade-up d1 mx-auto mt-4 max-w-4xl text-balance text-[clamp(26px,4.4vw,52px)] font-light leading-[1.15] tracking-[0.02em]">
             <span className="gold-text">{COPY.heroTitle[lang]}</span>
           </h1>
-          <p className="fade-up d2 mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[var(--soft)] sm:text-[15px]">{COPY.heroSub[lang]}</p>
+          <span aria-hidden className="hairline fade-up d2 mx-auto mt-6" />
+          <p className="fade-up d2 mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-[var(--soft)] sm:text-[15px]">{COPY.heroSub[lang]}</p>
         </section>
 
         <div className="fade-up d3 flex flex-1 items-center py-8 sm:py-12">
@@ -32,7 +33,11 @@ export default async function Home({ searchParams }: Props) {
         </div>
 
         <section className="fade-up d4 px-5 pb-10 sm:pb-12">
-          <h2 className="eyebrow mb-4 text-center">{COPY.pickRegion[lang]}</h2>
+          <div className="mx-auto mb-5 flex max-w-xl items-center gap-4">
+            <span aria-hidden className="h-px flex-1 bg-[var(--rule)]" />
+            <h2 className="eyebrow">{COPY.pickRegion[lang]}</h2>
+            <span aria-hidden className="h-px flex-1 bg-[var(--rule)]" />
+          </div>
           <ul className="mx-auto grid max-w-3xl grid-cols-2 gap-3 md:flex md:max-w-none md:flex-wrap md:justify-center">
             {regions.map(r => (
               <li key={r.key} className="md:min-w-[170px]">
@@ -43,9 +48,9 @@ export default async function Home({ searchParams }: Props) {
                     <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
                   </Link>
                 ) : (
-                  <div className="flex h-14 flex-col items-center justify-center rounded-full border border-dashed border-[var(--rule)] px-4 text-center leading-tight text-[var(--muted)]">
+                  <div className="flex h-14 flex-col items-center justify-center rounded-full border border-[var(--rule)] bg-white/50 px-4 text-center leading-tight text-[var(--soft)]">
                     <span className="text-[14px]">{r.name[lang]}</span>
-                    <span className="mt-0.5 text-[10px] tracking-[0.18em]">{COPY.comingSoon[lang]}</span>
+                    <span className="mt-0.5 text-[10px] tracking-[0.18em] text-[var(--muted)]">{COPY.comingSoon[lang]}</span>
                   </div>
                 )}
               </li>
