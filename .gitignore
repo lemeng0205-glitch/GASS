@@ -3,3 +3,6 @@ node_modules/
 .env*
 next-env.d.ts
 *.tsbuildinfo
+
+# 待上傳的英文說明書 PDF（約 75MB，Drive 已有備份，不進程式庫）
+待上傳_英文說明書/

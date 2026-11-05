@@ -1,4 +1,5 @@
 // ================================================
+// v0.2.0 | 2026-11-05 | 新增 Market（台灣／海外）與英文說明書產品；Pencil 2 與 Pencil 2 Halo 分開
 // v0.1.0 | 2026-11-04 | 獨立網站設定（從 ERP 草稿 feature/portal v0.2.0 搬出）
 // ------------------------------------------------
 // Changelog:
@@ -98,20 +99,35 @@ export const PRODUCT_LINES: Array<{ key: ProductLine; label: L10n }> = [
   { key: 'keyboard', label: { zh: '鍵盤保護殼', en: 'Keyboard cases' } },
 ]
 
-export interface PortalProduct { slug: string; name: string; line: ProductLine }
+/** tw = 台灣頁（中文說明書）；us = 海外頁（英文說明書） */
+export type Market = 'tw' | 'us'
 
-// slug = 媒體庫連結編號；圖片 = public/portal/products/<slug>.png
+export interface PortalProduct {
+  slug: string; name: string; nameEn?: string; line: ProductLine
+  markets: Market[]
+  noImage?: true   // public/portal/products/<slug>.png 尚未提供時填 true
+}
+
+// slug = 媒體庫連結編號（同一編號下以語言區分：zh-TW／en）；圖片 = public/portal/products/<slug>.png
+// 海外頁的說明書是英文版 PDF，原檔直接上傳，不改文字與圖片。
 export const PRODUCTS: PortalProduct[] = [
-  { slug: 'eip-pencil-2-halo', name: 'eiP Pencil 2',                     line: 'stylus' },
-  { slug: 'pencil-x-classic',  name: 'eiP Pencil X Classic（鉛筆款）',    line: 'stylus' },
-  { slug: 'pencil-x',          name: 'eiP Pencil X',                     line: 'stylus' },
-  { slug: 'pencil-pro',        name: 'eiP Pencil Pro',                   line: 'stylus' },
-  { slug: 'pencil',            name: 'eiP Pencil',                       line: 'stylus' },
-  { slug: 'mpp-stylus-pro',    name: 'eiP MPP Stylus Pro',               line: 'stylus' },
-  { slug: 's2',                name: 'eiP S2',                           line: 'stylus' },
-  { slug: 'hyperkeys',         name: 'HyperKeys 智定義鍵盤',              line: 'keyboard' },
-  { slug: 'magnetix-2',        name: 'Magnetix 2 鍵盤保護殼',             line: 'keyboard' },
-  { slug: 'magnetix-quick',    name: 'Magnetix 鍵盤保護殼（快捷版）',      line: 'keyboard' },
-  { slug: 'maglite-2',         name: 'Maglite 2 鍵盤保護殼',              line: 'keyboard' },
-  { slug: 'maglite-2-hp',      name: 'Maglite 2 劫盜地圖 哈利波特聯名款',  line: 'keyboard' },
+  { slug: 'eip-pencil-2-halo', name: 'eiP Pencil 2 Halo',                line: 'stylus',   markets: ['tw'] },
+  { slug: 'pencil-x-classic',  name: 'eiP Pencil X Classic（鉛筆款）',    line: 'stylus', markets: ['tw'] },
+  { slug: 'pencil-x',          name: 'eiP Pencil X',                     line: 'stylus',   markets: ['tw', 'us'] },
+  { slug: 'pencil-pro',        name: 'eiP Pencil Pro',                   line: 'stylus',   markets: ['tw'] },
+  { slug: 'pencil',            name: 'eiP Pencil',                       line: 'stylus',   markets: ['tw'] },
+  { slug: 'mpp-stylus-pro',    name: 'eiP MPP Stylus Pro',               line: 'stylus',   markets: ['tw'] },
+  { slug: 's2',                name: 'eiP S2',                           line: 'stylus',   markets: ['tw'] },
+  { slug: 'hyperkeys',         name: 'HyperKeys 智定義鍵盤',              nameEn: 'eiP HyperKeys Keyboard Case', line: 'keyboard', markets: ['tw', 'us'] },
+  { slug: 'magnetix-2',        name: 'Magnetix 2 鍵盤保護殼',             nameEn: 'eiP Magnetix Keyboard Case (iPad)', line: 'keyboard', markets: ['tw', 'us'] },
+  { slug: 'magnetix-quick',    name: 'Magnetix 鍵盤保護殼（快捷版）',      line: 'keyboard', markets: ['tw'] },
+  { slug: 'maglite-2',         name: 'Maglite 2 鍵盤保護殼',              line: 'keyboard', markets: ['tw'] },
+  { slug: 'maglite-2-hp',      name: 'Maglite 2 劫盜地圖 哈利波特聯名款',  line: 'keyboard', markets: ['tw'] },
+  // 海外獨有（只有英文版說明書）
+  { slug: 'eip-pencil-2',      name: 'eiP Pencil 2',                     line: 'stylus',   markets: ['us'], noImage: true },
+  { slug: 'usi2-pro',          name: 'eiP USI 2.0 Pro',                  line: 'stylus',   markets: ['us'], noImage: true },
+  { slug: 'usi2-ultra',        name: 'eiP USI 2.0 Ultra',                line: 'stylus',   markets: ['us'], noImage: true },
+  { slug: 'penoval-usi2',      name: 'Penoval USI 2.0',                  line: 'stylus',   markets: ['us'], noImage: true },
+  { slug: 'penoval-usi2-lite', name: 'Penoval USI 2.0 Lite',             line: 'stylus',   markets: ['us'], noImage: true },
+  { slug: 'magnetix-pixel',    name: 'eiP Magnetix Keyboard Case (Pixel Tablet)', line: 'keyboard', markets: ['us'], noImage: true },
 ]

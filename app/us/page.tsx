@@ -6,5 +6,5 @@ type Props = { searchParams: Promise<{ lang?: string | string[] }> }
 
 export default async function Page({ searchParams }: Props) {
   const lang = pickLang((await searchParams).lang)
-  return <RegionPage lang={lang} path="/us" title={COPY.usTitle} sub={COPY.usSub} links={US_LINKS} />
+  return <RegionPage lang={lang} path="/us" market="us" title={COPY.usTitle} sub={COPY.usSub} links={US_LINKS} />
 }
