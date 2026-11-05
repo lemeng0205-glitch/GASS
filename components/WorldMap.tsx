@@ -1,7 +1,8 @@
 // ================================================
-// v0.2.0 | 2026-11-04 | 高級質感：陸地點陣依「已開通地區」距離發光、地區之間以弧線連接
+// v0.3.0 | 2026-11-05 | 滿版無框：點陣用 SVG、地區釘點改 HTML 疊層（字級與點擊範圍不隨地圖縮放）
 // ------------------------------------------------
 // Changelog:
+//   v0.3.0 (2026-11-05) - 去掉外框；釘點與標籤改 HTML（手機只顯示圓點，點擊範圍 44px）；寬度依視窗高度自動限制
 //   v0.2.0 (2026-11-04) - 發光點陣、連線弧、脈動釘點（點陣資料移到 worldData.ts）
 //   v0.1.0 (2026-11-03) - 初版
 // 刻意不用政治地圖：只畫大陸輪廓的點陣，避開國界與地名爭議。
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const GLOW_RADIUS = 230
+const VB_H = H - 40
 
 export default function WorldMap({ regions, lang, comingSoon }: Props) {
   const pins = regions.map(rg => ({ rg, ...project(rg.lon, rg.lat), live: !!rg.href }))
@@ -48,47 +50,49 @@ export default function WorldMap({ regions, lang, comingSoon }: Props) {
       })
     : []
 
+  const q = lang === 'en' ? '?lang=en' : ''
+
   return (
-    <svg viewBox={`0 0 ${W} ${H - 40}`} className="h-auto w-full" role="img"
-         aria-label={lang === 'en' ? 'World map of service regions' : '服務地區世界地圖'}>
-      <defs>
-        <linearGradient id="arc" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0" stopColor="#8c7f68" stopOpacity="0.95" />
-          <stop offset="1" stopColor="#c9c0ae" stopOpacity="0.25" />
-        </linearGradient>
-      </defs>
-
-      {dots.map((d, i) => (
-        <circle key={i} cx={d.x} cy={d.y} r={2.1 + d.t * 0.7}
-                fill={d.t > 0 ? 'var(--accent)' : 'var(--dot)'}
-                fillOpacity={d.t > 0 ? 0.22 + 0.6 * d.t * d.t : 1} />
-      ))}
-
-      {arcs.map(a => (
-        <path key={a.key} d={a.d} fill="none" stroke="url(#arc)" strokeWidth={1}
-              className="map-arc" />
-      ))}
+    // 寬度：不超過視窗，也不讓整張圖高過「視窗高度 − 標題與按鈕區」，所以一個畫面放得下
+    <div className="relative mx-auto"
+         style={{ width: 'min(100%, calc((100svh - 380px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
+      <svg viewBox={`0 0 ${W} ${VB_H}`} className="absolute inset-0 h-full w-full" role="img"
+           aria-label={lang === 'en' ? 'World map of service regions' : '服務地區世界地圖'}>
+        <defs>
+          <linearGradient id="arc" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stopColor="#8c7f68" stopOpacity="0.95" />
+            <stop offset="1" stopColor="#c9c0ae" stopOpacity="0.25" />
+          </linearGradient>
+        </defs>
+        {dots.map((d, i) => (
+          <circle key={i} cx={d.x} cy={d.y} r={1.9 + d.t * 0.8}
+                  fill={d.t > 0 ? 'var(--accent)' : 'var(--dot)'}
+                  fillOpacity={d.t > 0 ? 0.22 + 0.6 * d.t * d.t : 1} />
+        ))}
+        {arcs.map(a => (
+          <path key={a.key} d={a.d} fill="none" stroke="url(#arc)" strokeWidth={1.2}
+                vectorEffect="non-scaling-stroke" className="map-arc" />
+        ))}
+      </svg>
 
       {pins.map(({ rg, x, y, live: isLive }) => {
         const label = rg.name[lang]
-        const pin = (
-          <g className={isLive ? 'cursor-pointer' : ''}>
-            {isLive && <circle cx={x} cy={y} r={11} fill="none" stroke="var(--accent)" strokeWidth={1.2}
-                               className="map-pulse" style={{ transformBox: 'fill-box', transformOrigin: 'center' }} />}
-            <circle cx={x} cy={y} r={isLive ? 6 : 4.5} fill={isLive ? 'var(--accent)' : 'var(--muted)'} />
-            <circle cx={x} cy={y} r={isLive ? 2.2 : 1.6} fill="var(--bg)" />
-            <text x={x} y={y - 18} textAnchor="middle"
-                  style={{ paintOrder: 'stroke', stroke: 'var(--card)', strokeWidth: 5, strokeLinejoin: 'round', letterSpacing: '0.08em' }}
-                  className={`text-[13px] font-medium ${isLive ? 'fill-[var(--ink)]' : 'fill-[var(--muted)]'}`}>
+        const pos = { left: `${(x / W) * 100}%`, top: `${(y / VB_H) * 100}%` }
+        const inner = (
+          <>
+            {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" />}
+            <span aria-hidden className={`relative h-3 w-3 rounded-full border-[3px] border-[var(--card)] ring-1 ${isLive ? 'bg-[var(--accent)] ring-[var(--accent)]' : 'bg-[var(--muted)] ring-[var(--muted)]'}`} />
+            <span className={`pointer-events-none absolute bottom-full mb-1 hidden whitespace-nowrap text-[13px] font-medium tracking-[0.08em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--muted)]'}`}
+                  style={{ textShadow: '0 0 4px var(--bg), 0 0 4px var(--bg), 0 0 4px var(--bg)' }}>
               {label}
-              {!isLive && <title>{comingSoon}</title>}
-            </text>
-          </g>
+            </span>
+          </>
         )
+        const cls = 'absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center'
         return isLive
-          ? <Link key={rg.code} href={`${rg.href}${lang === 'en' ? '?lang=en' : ''}`} aria-label={label}>{pin}</Link>
-          : <g key={rg.code}>{pin}</g>
+          ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} className={cls} style={pos}>{inner}</Link>
+          : <span key={rg.code} title={comingSoon} className={cls} style={pos}>{inner}</span>
       })}
-    </svg>
+    </div>
   )
 }

@@ -1,4 +1,4 @@
-// v0.2.0 | 2026-11-04 | 首頁：高級質感改版（大標題 + 發光世界地圖 + 地區入口）
+// v0.3.0 | 2026-11-05 | 首頁：地圖滿版無框、一個畫面放得下；地區改為大按鈕（已開通在前），手機以按鈕為主
 // 保固承諾區塊：正式條款未提供前不顯示（避免公開頁出現「待提供」字樣）。
 import Link from 'next/link'
 import { COPY, REGIONS, OTHER_REGION, pickLang } from '@/lib/portalConfig'
@@ -10,40 +10,42 @@ type Props = { searchParams: Promise<{ lang?: string | string[] }> }
 export default async function Home({ searchParams }: Props) {
   const lang = pickLang((await searchParams).lang)
   const q = lang === 'en' ? '?lang=en' : ''
-  const regionsAll = [...REGIONS.map(r => ({ key: r.code, name: r.name, href: r.href })),
-                      { key: 'other', name: OTHER_REGION.name, href: OTHER_REGION.href }]
+  const all = [...REGIONS.map(r => ({ key: r.code, name: r.name, href: r.href })),
+               { key: 'other', name: OTHER_REGION.name, href: OTHER_REGION.href }]
+  // 已開通的排前面
+  const regions = [...all.filter(r => r.href), ...all.filter(r => !r.href)]
 
   return (
     <>
       <PortalHeader lang={lang} path="/" />
-      <main className="mx-auto max-w-6xl px-5 pb-24">
-        <section className="pt-16 pb-10 text-center sm:pt-24">
+      <main className="flex min-h-[calc(100svh-57px)] flex-col">
+        <section className="px-5 pt-10 text-center sm:pt-14">
           <p className="eyebrow fade-up">Global Service &amp; Warranty</p>
-          <h1 className="fade-up d1 mx-auto mt-6 max-w-4xl text-balance text-[clamp(30px,5.2vw,58px)] font-light leading-[1.15] tracking-[0.02em]">
+          <h1 className="fade-up d1 mx-auto mt-4 max-w-4xl text-balance text-[clamp(26px,4.4vw,52px)] font-light leading-[1.15] tracking-[0.02em]">
             <span className="gold-text">{COPY.heroTitle[lang]}</span>
           </h1>
-          <p className="fade-up d2 mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-[var(--soft)]">{COPY.heroSub[lang]}</p>
+          <p className="fade-up d2 mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[var(--soft)] sm:text-[15px]">{COPY.heroSub[lang]}</p>
         </section>
 
-        <section className="glass fade-up d3 rounded-[28px] p-4 sm:p-10">
+        <div className="fade-up d3 flex flex-1 items-center py-4 sm:py-6">
           <WorldMap regions={REGIONS} lang={lang} comingSoon={COPY.comingSoon[lang]} />
-        </section>
+        </div>
 
-        <section className="fade-up d4 mt-14">
-          <h2 className="eyebrow mb-5">{COPY.pickRegion[lang]}</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {regionsAll.map(r => (
-              <li key={r.key}>
+        <section className="fade-up d4 px-5 pb-10 sm:pb-12">
+          <h2 className="eyebrow mb-4 text-center">{COPY.pickRegion[lang]}</h2>
+          <ul className="mx-auto grid max-w-3xl grid-cols-2 gap-3 md:flex md:max-w-none md:flex-wrap md:justify-center">
+            {regions.map(r => (
+              <li key={r.key} className="md:min-w-[170px]">
                 {r.href ? (
                   <Link href={`${r.href}${q}`}
-                        className="glass glass-hover group flex items-center justify-between rounded-2xl px-6 py-5 text-[16px] font-medium">
+                        className="btn-gold group flex h-14 items-center justify-between gap-3 rounded-full px-6 text-[15px] font-semibold tracking-wider">
                     {r.name[lang]}
-                    <span aria-hidden className="text-[var(--accent)] transition-transform group-hover:translate-x-1">→</span>
+                    <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
                   </Link>
                 ) : (
-                  <div className="flex items-center justify-between rounded-2xl border border-dashed border-[var(--rule)] px-6 py-5 text-[var(--muted)]">
-                    {r.name[lang]}
-                    <span className="text-[11px] tracking-[0.18em]">{COPY.comingSoon[lang]}</span>
+                  <div className="flex h-14 flex-col items-center justify-center rounded-full border border-dashed border-[var(--rule)] px-4 text-center leading-tight text-[var(--muted)]">
+                    <span className="text-[14px]">{r.name[lang]}</span>
+                    <span className="mt-0.5 text-[10px] tracking-[0.18em]">{COPY.comingSoon[lang]}</span>
                   </div>
                 )}
               </li>
