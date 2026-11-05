@@ -33,26 +33,27 @@ export interface PortalRegion {
   href: string | null    // null = 地圖上只顯示、不可點
   track: Track
   hoverLabel?: true      // 地點太密集時，標籤只在滑過時顯示（避免文字互相蓋住）
+  labelSide?: 'top' | 'bottom' | 'left' | 'right'   // 標籤放在圓點的哪一側，預設上方
 }
 
 // 地圖上的釘點：台灣進台灣頁；其他地點全部進同一個海外頁。
 // 只標示有銷售或客服管道的地區（標得越多，消費者越會當成「這裡有保固」）。
 export const REGIONS: PortalRegion[] = [
-  { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },        lon: 121,  lat: 23.7, href: '/tw', track: 'tw' },
-  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 139,  lat: 36,   href: '/us', track: 'intl' },
-  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/us', track: 'intl', hoverLabel: true },
-  { code: 'sg', name: { zh: '新加坡', en: 'Singapore' },   lon: 104,  lat: 1.3,  href: '/us', track: 'intl' },
-  { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/us', track: 'intl' },
-  { code: 'us', name: { zh: '美國', en: 'United States' }, lon: -98,  lat: 39,   href: '/us', track: 'intl' },
-  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/us', track: 'intl' },
-  { code: 'gb', name: { zh: '英國', en: 'United Kingdom' }, lon: -2,   lat: 54,   href: '/us', track: 'intl' },
-  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/us', track: 'intl', hoverLabel: true },
-  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', hoverLabel: true },
+  { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },        lon: 121,  lat: 23.7, href: '/tw', track: 'tw',   labelSide: 'left' },
+  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 139,  lat: 36,   href: '/us', track: 'intl', labelSide: 'right' },
+  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/us', track: 'intl', labelSide: 'top', hoverLabel: true },
+  { code: 'sg', name: { zh: '新加坡', en: 'Singapore' },   lon: 104,  lat: 1.3,  href: '/us', track: 'intl', labelSide: 'bottom' },
+  { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/us', track: 'intl', labelSide: 'bottom' },
+  { code: 'us', name: { zh: '美國', en: 'United States' }, lon: -98,  lat: 39,   href: '/us', track: 'intl', labelSide: 'bottom' },
+  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/us', track: 'intl', labelSide: 'top' },
+  { code: 'gb', name: { zh: '英國', en: 'United Kingdom' }, lon: -2,   lat: 54,   href: '/us', track: 'intl', labelSide: 'top' },
+  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/us', track: 'intl', labelSide: 'right', hoverLabel: true },
+  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', labelSide: 'bottom', hoverLabel: true },
 ]
 
 /** 首頁下方國家按鈕的最後一顆：沒列出的國家也進同一個海外頁 */
 export const OTHER_REGION: { name: L10n; href: string } = {
-  name: { zh: '其他國家／地區', en: 'Other countries / regions' },
+  name: { zh: '其他', en: 'Other' },
   href: '/us',
 }
 
@@ -61,6 +62,7 @@ export const COPY = {
   heroTitle:  { zh: '在世界任何地方，都安心使用', en: 'Peace of mind, wherever you are' },
   heroSub:    { zh: '選擇您的所在地區，取得產品說明書、保固登錄與售後服務。', en: 'Choose your region for manuals, warranty registration and support.' },
   pickRegion: { zh: '選擇地區', en: 'Choose your region' },
+  overseas:   { zh: '海外', en: 'International' },
   comingSoon: { zh: '即將推出', en: 'Coming soon' },
   manuals:    { zh: '產品說明書', en: 'Product manuals' },
   openManual: { zh: '使用說明書', en: 'Manual' },

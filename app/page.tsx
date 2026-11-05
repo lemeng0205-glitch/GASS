@@ -33,7 +33,7 @@ export default async function Home({ searchParams }: Props) {
       <style>{hoverCss}</style>
       <PortalHeader lang={lang} path="/" />
       <main className="track-home hero-glow flex min-h-[calc(100svh-57px)] flex-col">
-        <section className="px-5 pt-12 text-center sm:pt-16">
+        <section className="px-5 pt-10 text-center sm:pt-12">
           <p className="eyebrow fade-up">Global Service &amp; Warranty</p>
           <h1 className="fade-up d1 mx-auto mt-4 max-w-4xl text-balance text-[clamp(26px,4.4vw,52px)] font-light leading-[1.15] tracking-[0.02em]">
             <span className="gold-text">{COPY.heroTitle[lang]}</span>
@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: Props) {
           <p className="fade-up d2 mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-[var(--soft)] sm:text-[15px]">{COPY.heroSub[lang]}</p>
         </section>
 
-        <div className="fade-up d3 flex flex-1 items-center py-8 sm:py-12">
+        <div className="fade-up d3 flex flex-1 items-center justify-center overflow-hidden py-6 sm:py-8">
           <WorldMap regions={REGIONS} lang={lang} comingSoon={COPY.comingSoon[lang]} explicitLang={explicitLang} />
         </div>
 
@@ -53,25 +53,26 @@ export default async function Home({ searchParams }: Props) {
             <span aria-hidden className="h-px flex-1 bg-[var(--rule)]" />
           </div>
 
-          <div className="mx-auto flex max-w-4xl flex-col items-center gap-4">
+          <div className="mx-auto flex max-w-4xl flex-col items-center">
             <Link href={`${taiwan.href}${q}`} data-track="tw"
-                  className="track-btn btn-gold group flex h-14 w-full max-w-xs items-center justify-between gap-3 rounded-full px-7 text-[15px] font-semibold tracking-wider">
+                  className="track-btn btn-gold group flex h-14 w-full max-w-[240px] items-center justify-between gap-3 rounded-full px-7 text-[15px] font-semibold tracking-wider">
               {taiwan.name[lang]}
               <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
 
-            <ul className="flex flex-wrap justify-center gap-2.5">
+            <p className="mb-3 mt-6 text-[11px] tracking-[0.3em] text-[var(--muted)]">{COPY.overseas[lang]}</p>
+            <ul className="flex flex-wrap justify-center gap-2">
               {countries.map(c => (
                 <li key={c.code}>
                   <Link href={`${c.href}${q}`} data-code={c.code}
-                        className="pill track-pill flex h-11 items-center rounded-full px-5 text-[14px] font-medium tracking-wider">
+                        className="pill track-pill flex h-10 items-center rounded-full px-4 text-[13px] font-medium tracking-wider">
                     {c.name[lang]}
                   </Link>
                 </li>
               ))}
               <li>
                 <Link href={`${OTHER_REGION.href}${q}`}
-                      className="track-pill flex h-11 items-center rounded-full px-5 text-[14px] font-medium tracking-wider text-[var(--soft)]">
+                      className="track-pill flex h-10 items-center rounded-full px-4 text-[13px] font-medium tracking-wider text-[var(--soft)]">
                   {OTHER_REGION.name[lang]}
                 </Link>
               </li>

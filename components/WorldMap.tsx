@@ -1,8 +1,9 @@
 // ================================================
-// v0.3.0 | 2026-11-05 | 滿版無框：點陣用 SVG、地區釘點改 HTML 疊層（字級與點擊範圍不隨地圖縮放）
+// v0.4.0 | 2026-11-05 | 去雜訊：寬度跟視窗寬度走（不再被高度壓縮）、標籤各自指定方向不互相疊、只有台灣有脈動圈、連線變淡
 // ------------------------------------------------
 // Changelog:
-//   v0.3.0 (2026-11-05) - 去掉外框；釘點與標籤改 HTML（手機只顯示圓點，點擊範圍 44px）；寬度依視窗高度自動限制
+//   v0.4.0 (2026-11-05) - 標籤方向可指定（labelSide）；海外點縮小且無脈動；連線變淡；地圖寬度改為「至少 720px、最多隨視窗高度」
+//   v0.3.0 (2026-11-05) - 滿版無框：點陣用 SVG、地區釘點改 HTML 疊層（字級與點擊範圍不隨地圖縮放）
 //   v0.2.0 (2026-11-04) - 發光點陣、連線弧、脈動釘點（點陣資料移到 worldData.ts）
 //   v0.1.0 (2026-11-03) - 初版
 // 刻意不用政治地圖：只畫大陸輪廓的點陣，避開國界與地名爭議。
@@ -20,6 +21,14 @@ interface Props {
 
 const GLOW_RADIUS = 230
 const VB_H = H - 40
+
+// 標籤相對於圓點的位置（手機版不顯示標籤）
+const LABEL_POS = {
+  top:    'bottom-full left-1/2 -translate-x-1/2',
+  bottom: 'top-full left-1/2 -translate-x-1/2',
+  left:   'right-full top-1/2 -translate-y-1/2',
+  right:  'left-full top-1/2 -translate-y-1/2',
+} as const
 
 export default function WorldMap({ regions, lang, comingSoon, explicitLang = false }: Props) {
   const pins = regions.map(rg => ({ rg, ...project(rg.lon, rg.lat), live: !!rg.href }))
@@ -56,10 +65,11 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
   const q = explicitLang ? `?lang=${lang}` : ''
 
   return (
-    // 寬度：不超過視窗，也不讓整張圖高過「視窗高度 − 標題與按鈕區」，所以一個畫面放得下
-    <div className="relative mx-auto"
-         style={{ width: 'min(100%, calc((100svh - 610px) * 2.6667))', minWidth: 'min(100%, 340px)', aspectRatio: `${W} / ${VB_H}` }}>
-      {/* 已開通地區底下的一團柔光 */}
+    // 寬度：優先跟著視窗高度讓首頁盡量一屏放得下，但不小於 720px（再小地圖就看不清楚）；手機則是整個寬度
+    // 手機：放大到 115% 並置中（由外層 overflow-hidden 裁掉兩側邊緣），地圖才看得清楚
+    <div className="relative w-[115%] max-w-none shrink-0 md:w-[var(--mapw)]"
+         style={{ '--mapw': 'min(100%, max(calc((100svh - 560px) * 2.6667), 720px))', aspectRatio: `${W} / ${VB_H}` } as React.CSSProperties}>
+      {/* 台灣底下的一團柔光 */}
       {live.filter(p => p.rg.track === 'tw').map(p => (
         <span key={`glow-${p.rg.code}`} aria-hidden className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
               style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / VB_H) * 100}%`, width: '26%', aspectRatio: '1',
@@ -69,8 +79,8 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
            aria-label={lang === 'en' ? 'World map of service regions' : '服務地區世界地圖'}>
         <defs>
           <linearGradient id="arc" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stopColor="#8c7f68" stopOpacity="0.95" />
-            <stop offset="1" stopColor="#c9c0ae" stopOpacity="0.25" />
+            <stop offset="0" stopColor="#8c7f68" stopOpacity="0.7" />
+            <stop offset="1" stopColor="#c9c0ae" stopOpacity="0.2" />
           </linearGradient>
         </defs>
         {dots.map((d, i) => (
@@ -79,28 +89,33 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
                   fillOpacity={d.t > 0 ? 0.22 + 0.6 * d.t * d.t : 1} />
         ))}
         {arcs.map(a => (
-          <path key={a.key} d={a.d} fill="none" stroke="url(#arc)" strokeWidth={1.2}
-                vectorEffect="non-scaling-stroke" className="map-arc" />
+          <path key={a.key} d={a.d} fill="none" stroke="url(#arc)" strokeWidth={1}
+                vectorEffect="non-scaling-stroke" opacity={0.45} />
         ))}
       </svg>
 
       {pins.map(({ rg, x, y, live: isLive }) => {
+        const isTw = rg.track === 'tw'
         const hoverOnly = !!rg.hoverLabel
         const label = rg.name[lang]
         const pos = { left: `${(x / W) * 100}%`, top: `${(y / VB_H) * 100}%` }
         const inner = (
           <>
-            {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" />}
-            {isLive && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)]" style={{ animationDelay: '1.6s' }} />}
-            <span aria-hidden className={`pin-dot relative h-3 w-3 rounded-full border-[3px] border-[var(--card)] ring-1 ${isLive ? 'bg-[var(--accent)] ring-[var(--accent)]' : 'bg-[var(--muted)] ring-[var(--muted)]'}`} />
-            <span className={`pin-label pointer-events-none absolute bottom-full mb-2 hidden whitespace-nowrap rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.12em] md:block ${isLive ? 'text-[var(--ink)]' : 'text-[var(--soft)]'} ${hoverOnly ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100' : ''}`}>
+            {isTw && <span aria-hidden className="map-pulse absolute h-4 w-4 rounded-full border border-[var(--accent)]" />}
+            {isTw && <span aria-hidden className="map-pulse absolute h-4 w-4 rounded-full border border-[var(--accent)]" style={{ animationDelay: '1.6s' }} />}
+            <span aria-hidden className={`pin-dot relative rounded-full border-[var(--card)] ring-1 ${
+              isTw ? 'h-3.5 w-3.5 border-[3px] bg-[var(--accent)] ring-[var(--accent)]'
+                   : 'h-2.5 w-2.5 border-2 bg-[var(--accent)] ring-[var(--accent)]'}`} />
+            <span className={`pin-label pointer-events-none absolute hidden whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-[0.1em] md:block ${LABEL_POS[rg.labelSide ?? 'top']} ${
+              isTw ? 'text-[var(--ink)]' : 'text-[var(--soft)]'} ${
+              hoverOnly ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100' : ''}`}>
               {label}
             </span>
           </>
         )
         // 手機上地點挨得很近：海外釘點點擊範圍縮小，台灣放在最上層，避免點台灣卻被旁邊的點搶走
         const cls = `group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center ${
-          rg.track === 'tw' ? 'z-10 h-11 w-11' : 'h-6 w-6 md:h-11 md:w-11'}`
+          isTw ? 'z-10 h-11 w-11' : 'h-6 w-6 md:h-9 md:w-9'}`
         return isLive
           ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} data-track={rg.track} data-code={rg.code} className={`pin ${cls}`} style={pos}>{inner}</Link>
           : <span key={rg.code} title={comingSoon} className={cls} style={pos}>{inner}</span>
