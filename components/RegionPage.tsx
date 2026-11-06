@@ -1,3 +1,4 @@
+// v0.6.0 | 2026-11-06 | 移除標題上方的「eiP Service」小字
 // v0.5.0 | 2026-11-06 | 說明書直接顯示，先選「觸控筆／鍵盤保護殼」再看產品（ManualTabs）
 // v0.4.0 | 2026-11-06 | 移除「一鍵複製訂單資訊」；快捷卡片改為 QuickLinks
 // v0.3.0 | 2026-11-05 | 產品依市場（台灣／海外）篩選；尚無圖片的產品顯示 eiP 底座
@@ -35,7 +36,6 @@ export default function RegionPage(props: {
         </Link>
 
         <section className="pt-8 pb-10">
-          <p className="eyebrow fade-up">eiP Service</p>
           <h1 className="fade-up d1 mt-4 text-[clamp(28px,5vw,52px)] font-light leading-tight tracking-[0.02em]">
             <span className="gold-text">{title[lang]}</span>
           </h1>
