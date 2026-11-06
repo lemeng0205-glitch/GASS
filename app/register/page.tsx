@@ -1,16 +1,16 @@
+// v0.2.0 | 2026-11-06 | 語言改由 getLang() 取得
 // v0.1.0 | 2026-11-05 | 保固登錄頁
 import Link from 'next/link'
 import PortalHeader from '@/components/PortalHeader'
 import WarrantyForm from '@/components/WarrantyForm'
-import { COPY, pickLang, type L10n } from '@/lib/portalConfig'
-
-type Props = { searchParams: Promise<{ lang?: string | string[] }> }
+import { COPY, type L10n } from '@/lib/portalConfig'
+import { getLang } from '@/lib/serverLang'
 
 const TITLE: L10n = { zh: '保固登錄', en: 'Warranty registration' }
 const SUB: L10n = { zh: '登錄您的產品以享保固服務。', en: 'Register your product to activate warranty service.' }
 
-export default async function Page({ searchParams }: Props) {
-  const lang = pickLang((await searchParams).lang)
+export default async function Page() {
+  const lang = await getLang()
   const q = lang === 'en' ? '?lang=en' : ''
   return (
     <>

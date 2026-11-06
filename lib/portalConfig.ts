@@ -14,9 +14,7 @@
 export type PortalLang = 'zh' | 'en'
 export type L10n = Record<PortalLang, string>
 
-/** 網址 ?lang=zh|en 優先；沒帶時用該頁預設（台灣頁中文、海外頁英文） */
-export const pickLang = (v: string | string[] | undefined, fallback: PortalLang = 'zh'): PortalLang =>
-  v === 'en' ? 'en' : v === 'zh' ? 'zh' : fallback
+// 語言判斷已集中到 lib/lang.ts（middleware 計算）；頁面用 lib/serverLang.ts 的 getLang()
 
 /** 說明書所在位置（ERP 媒體庫的公開連結；若日後換網域，只改這一行） */
 export const MEDIA_BASE = 'https://lemeng-erp.vercel.app'

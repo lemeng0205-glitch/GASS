@@ -3,8 +3,8 @@
 // v0.3.0 | 2026-11-05 | 地圖滿版無框、一個畫面放得下
 // 保固承諾區塊：正式條款未提供前不顯示（避免公開頁出現「待提供」字樣）。
 import Link from 'next/link'
-import { headers } from 'next/headers'
-import { COPY, REGIONS, OTHER_REGION, pickLang } from '@/lib/portalConfig'
+import { COPY, REGIONS, OTHER_REGION } from '@/lib/portalConfig'
+import { getLang } from '@/lib/serverLang'
 import PortalHeader from '@/components/PortalHeader'
 import WorldMap from '@/components/WorldMap'
 
@@ -13,9 +13,8 @@ type Props = { searchParams: Promise<{ lang?: string | string[] }> }
 export default async function Home({ searchParams }: Props) {
   const param = (await searchParams).lang
   const explicitLang = param === 'zh' || param === 'en'
-  // 沒選過語言：瀏覽器語言是中文就用中文，其他一律英文（首頁是全球入口）
-  const accept = (await headers()).get('accept-language') ?? ''
-  const lang = pickLang(param, /^zh/i.test(accept.trim()) ? 'zh' : 'en')
+  // 語言：網址 ?lang= ＞ 使用者上次選的 ＞ 瀏覽器語言（中文就中文，其他英文），由 middleware 統一判斷
+  const lang = await getLang()
   const q = explicitLang ? `?lang=${lang}` : ''
 
   const taiwan = REGIONS.find(r => r.track === 'tw')!
