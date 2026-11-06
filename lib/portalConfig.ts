@@ -131,10 +131,10 @@ export const PRODUCTS: PortalProduct[] = [
   { slug: 'maglite-2',         name: 'Maglite 2 鍵盤保護殼',              line: 'keyboard', markets: ['tw'] },
   { slug: 'maglite-2-hp',      name: 'Maglite 2 劫盜地圖 哈利波特聯名款',  line: 'keyboard', markets: ['tw'] },
   // 海外獨有（只有英文版說明書）
-  { slug: 'eip-pencil-2',      name: 'eiP Pencil 2',                     line: 'stylus',   markets: ['us'], noImage: true },
-  { slug: 'usi2-pro',          name: 'eiP USI 2.0 Pro',                  line: 'stylus',   markets: ['us'], noImage: true },
-  { slug: 'usi2-ultra',        name: 'eiP USI 2.0 Ultra',                line: 'stylus',   markets: ['us'], noImage: true },
-  { slug: 'penoval-usi2',      name: 'Penoval USI 2.0',                  line: 'stylus',   markets: ['us'], noImage: true },
-  { slug: 'penoval-usi2-lite', name: 'Penoval USI 2.0 Lite',             line: 'stylus',   markets: ['us'], noImage: true },
-  { slug: 'magnetix-pixel',    name: 'eiP Magnetix Keyboard Case (Pixel Tablet)', line: 'keyboard', markets: ['us'], noImage: true },
+  { slug: 'eip-pencil-2',      name: 'eiP Pencil 2',                     line: 'stylus',   markets: ['us'] },
+  { slug: 'usi2-pro',          name: 'eiP USI 2.0 Pro',                  line: 'stylus',   markets: ['us'] },
+  { slug: 'usi2-ultra',        name: 'eiP USI 2.0 Ultra',                line: 'stylus',   markets: ['us'] },
+  { slug: 'penoval-usi2',      name: 'Penoval USI 2.0',                  line: 'stylus',   markets: ['us'] },
+  { slug: 'penoval-usi2-lite', name: 'Penoval USI 2.0 Lite',             line: 'stylus',   markets: ['us'] },
+  { slug: 'magnetix-pixel',    name: 'eiP Magnetix Keyboard Case (Pixel Tablet)', line: 'keyboard', markets: ['us'] },
 ]
