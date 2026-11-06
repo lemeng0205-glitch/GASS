@@ -18,7 +18,9 @@ export type L10n = Record<PortalLang, string>
 
 /** 說明書所在位置（ERP 媒體庫的公開連結；若日後換網域，只改這一行） */
 export const MEDIA_BASE = 'https://lemeng-erp.vercel.app'
-export const manualUrl = (slug: string) => `${MEDIA_BASE}/m/${slug}`
+/** 海外頁帶 ?lang=en、台灣頁帶 ?lang=zh-TW：同一編號有中英文時直接開對應語言，不用再選（媒體庫 v1.3.0 起支援） */
+export const manualUrl = (slug: string, market: 'tw' | 'us') =>
+  `${MEDIA_BASE}/m/${slug}?lang=${market === 'us' ? 'en' : 'zh-TW'}`
 
 /** 兩條軌道：台灣（自建、中文說明書）／海外（英文說明書，所有海外地區同一套） */
 export type Track = 'tw' | 'intl'

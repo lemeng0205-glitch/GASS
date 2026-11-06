@@ -22,7 +22,7 @@ export default function RegionPage(props: {
     items: PRODUCTS.filter(p => p.line === line.key && p.markets.includes(market)).map(p => ({
       slug: p.slug,
       name: lang === 'en' && p.nameEn ? p.nameEn : p.name,
-      url: manualUrl(p.slug),
+      url: manualUrl(p.slug, market),
       noImage: p.noImage,
     })),
   }))
