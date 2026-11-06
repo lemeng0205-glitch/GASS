@@ -59,7 +59,7 @@ export const OTHER_REGION: { name: L10n; href: string } = {
 }
 
 export const COPY = {
-  brand:      { zh: 'eiP 全球售後服務', en: 'eiP Global Service' },
+  brand:      { zh: 'eiP 全球服務中心', en: 'eiP Global Service Center' },
   heroTitle:  { zh: '在世界任何地方，都安心使用', en: 'Peace of mind, wherever you are' },
   heroSub:    { zh: '選擇您的所在地區，取得產品說明書、保固登錄與售後服務。', en: 'Choose your region for manuals, warranty registration and support.' },
   pickRegion: { zh: '選擇地區', en: 'Choose your region' },

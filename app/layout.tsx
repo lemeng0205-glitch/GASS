@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'eiP 全球售後服務',
+  title: 'eiP 全球服務中心 | Global Service Center',
   description: 'eiP 產品說明書、保固登錄與售後服務',
 }
 export const viewport: Viewport = { width: 'device-width', initialScale: 1 }

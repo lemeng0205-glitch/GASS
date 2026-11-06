@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: Props) {
       <PortalHeader lang={lang} path="/" />
       <main className="track-home hero-glow flex min-h-[calc(100svh-57px)] flex-col">
         <section className="px-5 pt-10 text-center sm:pt-12">
-          <p className="eyebrow fade-up">Global Service &amp; Warranty</p>
+          <p className="eyebrow fade-up">Global Service Center</p>
           <h1 className="fade-up d1 mx-auto mt-4 max-w-4xl text-balance text-[clamp(26px,4.4vw,52px)] font-light leading-[1.15] tracking-[0.02em]">
             <span className="gold-text">{COPY.heroTitle[lang]}</span>
           </h1>
