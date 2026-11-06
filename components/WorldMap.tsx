@@ -57,7 +57,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
     ? live.filter(p => p !== origin).map(p => {
         const mx = (origin.x + p.x) / 2
         const my = Math.min(origin.y, p.y) - Math.abs(origin.x - p.x) * 0.28
-        return { key: p.rg.code, d: `M${origin.x},${origin.y} Q${mx},${my} ${p.x},${p.y}` }
+        return { key: p.rg.code, hide: !!p.rg.mobileHide, d: `M${origin.x},${origin.y} Q${mx},${my} ${p.x},${p.y}` }
       })
     : []
 
@@ -90,7 +90,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
         ))}
         {arcs.map(a => (
           <path key={a.key} d={a.d} fill="none" stroke="url(#arc)" strokeWidth={1}
-                vectorEffect="non-scaling-stroke" opacity={0.45} />
+                vectorEffect="non-scaling-stroke" opacity={0.45} className={a.hide ? 'max-md:hidden' : undefined} />
         ))}
       </svg>
 
@@ -101,11 +101,11 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
         const pos = { left: `${(x / W) * 100}%`, top: `${(y / VB_H) * 100}%` }
         const inner = (
           <>
-            {isTw && <span aria-hidden className="map-pulse absolute h-4 w-4 rounded-full border border-[var(--accent)]" />}
-            {isTw && <span aria-hidden className="map-pulse absolute h-4 w-4 rounded-full border border-[var(--accent)]" style={{ animationDelay: '1.6s' }} />}
+            {isTw && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)] md:h-4 md:w-4" />}
+            {isTw && <span aria-hidden className="map-pulse absolute h-3.5 w-3.5 rounded-full border border-[var(--accent)] md:h-4 md:w-4" style={{ animationDelay: '1.6s' }} />}
             <span aria-hidden className={`pin-dot relative rounded-full border-[var(--card)] ring-1 ${
-              isTw ? 'h-3.5 w-3.5 border-[3px] bg-[var(--accent)] ring-[var(--accent)]'
-                   : 'h-2.5 w-2.5 border-2 bg-[var(--accent)] ring-[var(--accent)]'}`} />
+              isTw ? 'h-3 w-3 border-[3px] bg-[var(--accent)] ring-[var(--accent)] md:h-3.5 md:w-3.5'
+                   : 'h-2 w-2 border-[1.5px] bg-[var(--accent)] ring-[var(--accent)] md:h-2.5 md:w-2.5 md:border-2'}`} />
             <span className={`pin-label pointer-events-none absolute hidden whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-[0.1em] md:block ${LABEL_POS[rg.labelSide ?? 'top']} ${
               isTw ? 'text-[var(--ink)]' : 'text-[var(--soft)]'} ${
               hoverOnly ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100' : ''}`}>
@@ -115,7 +115,7 @@ export default function WorldMap({ regions, lang, comingSoon, explicitLang = fal
         )
         // 手機上地點挨得很近：海外釘點點擊範圍縮小，台灣放在最上層，避免點台灣卻被旁邊的點搶走
         const cls = `group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center ${
-          isTw ? 'z-10 h-11 w-11' : 'h-6 w-6 md:h-9 md:w-9'}`
+          isTw ? 'z-10 h-11 w-11' : 'h-6 w-6 md:h-9 md:w-9'} ${rg.mobileHide ? 'max-md:hidden' : ''}`
         return isLive
           ? <Link key={rg.code} href={`${rg.href}${q}`} aria-label={label} data-track={rg.track} data-code={rg.code} className={`pin ${cls}`} style={pos}>{inner}</Link>
           : <span key={rg.code} title={comingSoon} className={cls} style={pos}>{inner}</span>

@@ -34,6 +34,7 @@ export interface PortalRegion {
   track: Track
   hoverLabel?: true      // 地點太密集時，標籤只在滑過時顯示（避免文字互相蓋住）
   labelSide?: 'top' | 'bottom' | 'left' | 'right'   // 標籤放在圓點的哪一側，預設上方
+  mobileHide?: true      // 手機上地圖太小、點會擠在一起：這個點只在桌面版顯示（下方國家按鈕不受影響）
 }
 
 // 地圖上的釘點：台灣進台灣頁；其他地點全部進同一個海外頁。
@@ -41,14 +42,14 @@ export interface PortalRegion {
 export const REGIONS: PortalRegion[] = [
   { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },        lon: 121,  lat: 23.7, href: '/tw', track: 'tw',   labelSide: 'left' },
   { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 139,  lat: 36,   href: '/us', track: 'intl', labelSide: 'right' },
-  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/us', track: 'intl', labelSide: 'top', hoverLabel: true },
+  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/us', track: 'intl', labelSide: 'top', hoverLabel: true, mobileHide: true },
   { code: 'sg', name: { zh: '新加坡', en: 'Singapore' },   lon: 104,  lat: 1.3,  href: '/us', track: 'intl', labelSide: 'bottom' },
   { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/us', track: 'intl', labelSide: 'bottom' },
   { code: 'us', name: { zh: '美國', en: 'United States' }, lon: -98,  lat: 39,   href: '/us', track: 'intl', labelSide: 'bottom' },
-  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/us', track: 'intl', labelSide: 'top' },
+  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/us', track: 'intl', labelSide: 'top', mobileHide: true },
   { code: 'gb', name: { zh: '英國', en: 'United Kingdom' }, lon: -2,   lat: 54,   href: '/us', track: 'intl', labelSide: 'top' },
-  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/us', track: 'intl', labelSide: 'right', hoverLabel: true },
-  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', labelSide: 'bottom', hoverLabel: true },
+  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/us', track: 'intl', labelSide: 'right', hoverLabel: true, mobileHide: true },
+  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', labelSide: 'bottom', hoverLabel: true, mobileHide: true },
 ]
 
 /** 首頁下方國家按鈕的最後一顆：沒列出的國家也進同一個海外頁 */
