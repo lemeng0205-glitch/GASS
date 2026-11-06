@@ -97,7 +97,7 @@ export const US_LINKS: QuickLink[] = [
   { key: 'manuals',  label: { zh: '產品說明書', en: 'Product manuals' },
     desc: { zh: '鍵盤保護殼、觸控筆說明書', en: 'Keyboard cases & styluses' }, href: '#manuals' },
   { key: 'faq',      label: { zh: '常見問題', en: 'FAQ' },
-    desc: { zh: '常見問題與解答', en: 'Frequently asked questions' }, href: 'https://www.penoval.com/en/blogs/faq' },
+    desc: { zh: '常見問題與解答', en: 'Frequently asked questions' }, href: 'https://eipstore.com/blogs/guide-2026' },
 ]
 
 export type ProductLine = 'keyboard' | 'stylus'
