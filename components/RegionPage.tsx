@@ -1,3 +1,4 @@
+// v0.4.0 | 2026-11-06 | 移除「一鍵複製訂單資訊」；快捷卡片改為 QuickLinks，點「產品說明書」於下方展開
 // v0.3.0 | 2026-11-05 | 產品依市場（台灣／海外）篩選；尚無圖片的產品顯示 eiP 底座
 // v0.2.0 | 2026-11-04 | 地區服務中心：高級質感版型（快捷入口 + 一鍵複製 + 產品說明書）
 import Link from 'next/link'
@@ -6,7 +7,7 @@ import {
   type PortalLang, type QuickLink, type L10n, type Market,
 } from '@/lib/portalConfig'
 import PortalHeader from './PortalHeader'
-import CopyOrderInfo from './CopyOrderInfo'
+import QuickLinks from './QuickLinks'
 
 export default function RegionPage(props: {
   lang: PortalLang; path: string; market: Market; title: L10n; sub: L10n; links: QuickLink[]
@@ -29,26 +30,8 @@ export default function RegionPage(props: {
           <p className="fade-up d2 mt-4 max-w-xl text-[15px] leading-relaxed text-[var(--soft)]">{sub[lang]}</p>
         </section>
 
-        <section className="fade-up d3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {links.map(l => {
-            const external = l.href.startsWith('http')
-            return (
-              <a key={l.key} href={l.href}
-                 {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                 className="glass glass-hover group rounded-2xl p-5 sm:p-6">
-                <p className="flex items-center justify-between text-[16px] font-medium">
-                  {l.label[lang]}
-                  <span aria-hidden className="text-[var(--accent)] transition-transform group-hover:translate-x-1">→</span>
-                </p>
-                <p className="mt-2 text-[13px] leading-snug text-[var(--soft)]">{l.desc[lang]}</p>
-              </a>
-            )
-          })}
-        </section>
-
-        <CopyOrderInfo lang={lang} market={market} />
-
-        <section id="manuals" className="mt-20 scroll-mt-24">
+        <QuickLinks links={links} lang={lang}>
+        <section className="pt-14">
           <h2 className="eyebrow">{COPY.manuals[lang]}</h2>
           {PRODUCT_LINES.map(line => (
             <div key={line.key} className="mt-8">
@@ -76,6 +59,7 @@ export default function RegionPage(props: {
             </div>
           ))}
         </section>
+        </QuickLinks>
       </main>
       <footer className="border-t border-[var(--rule)] py-8 text-center text-[11px] tracking-[0.2em] text-[var(--muted)]">
         © {new Date().getFullYear()} LEMENG · eiP

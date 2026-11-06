@@ -74,19 +74,6 @@ export const COPY = {
   usSub:      { zh: '說明書、保固登錄與常見問題。', en: 'Manuals, warranty registration and FAQ.' },
 } satisfies Record<string, L10n>
 
-export const COPY_ORDER = {
-  title:     { zh: '聯絡客服前：一鍵複製訂單資訊', en: 'Before contacting support: copy your order info' },
-  sub:       { zh: '填好後按複製，再貼給客服，可以加快處理。這些資料只留在您的瀏覽器，不會上傳。',
-               en: 'Fill in, copy, and paste it to our support team to speed things up. Nothing is uploaded; it stays in your browser.' },
-  orderNo:   { zh: '訂單編號', en: 'Order number' },
-  orderDate: { zh: '訂單日期', en: 'Order date' },
-  item:      { zh: '品項', en: 'Product' },
-  pick:      { zh: '請選擇品項', en: 'Select a product' },
-  copy:      { zh: '複製訂單資訊', en: 'Copy order info' },
-  copied:    { zh: '已複製 ✓', en: 'Copied ✓' },
-  manual:    { zh: '無法自動複製，請手動選取上方文字複製。', en: 'Could not copy automatically. Please select the text above and copy it.' },
-} satisfies Record<string, L10n>
-
 export interface QuickLink { key: string; label: L10n; desc: L10n; href: string }
 
 export const WARRANTY_TW = 'https://eipstore.online/2025%e4%bf%9d%e5%9b%ba%e9%a0%81/'
