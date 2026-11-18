@@ -1,3 +1,4 @@
+// v0.1.1 | 2026-11-18 | patch 可帶 view_count（搬遷用）
 // v0.1.0 | 2026-11-18 | 媒體庫管理 API（只給 ERP 伺服器呼叫）
 // 驗證：HMAC 簽章 + 時間戳（見 lib/adminAuth.ts）。驗證失敗一律回 404，不說明原因。
 // 只能做媒體庫的操作（列表、新增、改欄位、刪除、發放上傳通行證、登記版本、還原、下載連結）；
@@ -104,6 +105,12 @@ export async function POST(req: Request) {
       }
       if (body.sku !== undefined) patch.sku = str(body.sku, 64) || null
       if (typeof body.is_published === 'boolean') patch.is_published = body.is_published
+      // 搬遷用：帶入原本累計的開啟次數（整數 0～10 億）
+      if (body.view_count !== undefined) {
+        const n = Number(body.view_count)
+        if (!Number.isInteger(n) || n < 0 || n > 1_000_000_000) return fail('開啟次數不正確')
+        patch.view_count = n
+      }
       const r = await patchFile(id, patch)
       return r.error ? fail(r.error, r.status) : ok(r.data)
     }
