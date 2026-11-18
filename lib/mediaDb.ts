@@ -16,6 +16,7 @@ export interface MediaVersion {
 export interface MediaFile {
   id: string; slug: string; lang: string; title: string; kind: MediaKind; sku: string | null
   is_published: boolean; current_version_id: string | null; view_count: number
+  countries: string[]
   created_by: string | null; created_at: string; updated_at: string
 }
 export interface MediaItem extends MediaFile { versions: MediaVersion[] }
@@ -78,12 +79,12 @@ export async function addVersion(mediaId: string, f: UploadedFileInfo, username:
 }
 
 export async function createFile(
-  input: { slug: string; lang: string; title: string; kind: MediaKind; sku: string | null; file: UploadedFileInfo },
+  input: { slug: string; lang: string; title: string; kind: MediaKind; sku: string | null; countries: string[]; file: UploadedFileInfo },
   username: string,
 ): Promise<{ data?: MediaFile; error?: string; status?: number }> {
   const ins = await rest<MediaFile[]>(FILES, {
     method: 'POST', returning: true,
-    body: { slug: input.slug, lang: input.lang, title: input.title, kind: input.kind, sku: input.sku, created_by: username },
+    body: { slug: input.slug, lang: input.lang, title: input.title, kind: input.kind, sku: input.sku, countries: input.countries, created_by: username },
   })
   if (ins.code === '23505') return { error: '這個編號與語言已經有文件了，請改用該文件的「覆蓋」', status: 400 }
   const media = ins.data?.[0]
@@ -147,13 +148,23 @@ export async function downloadUrl(id: string, versionId?: string): Promise<{ url
 }
 
 // ---------- 公開（消費者） ----------
-export interface PublicDoc { id: string; title: string; kind: string; lang: string; current_version_id: string; updated_at: string }
+export interface PublicDoc {
+  id: string; slug: string; title: string; kind: string; lang: string; countries: string[]
+  current_version_id: string; updated_at: string
+}
+type RawPublic = Omit<PublicDoc, 'current_version_id'> & { current_version_id: string | null }
+const PUBLIC_COLS = 'id,slug,title,kind,lang,countries,current_version_id,updated_at'
 
 /** 某編號底下「已上架且有目前版本」的文件。只讀公開需要的欄位 */
 export async function publishedBySlug(slug: string): Promise<PublicDoc[]> {
   if (!isSlug(slug)) return []
-  const r = await rest<Array<PublicDoc | (Omit<PublicDoc, 'current_version_id'> & { current_version_id: string | null })>>(
-    `${FILES}?select=id,title,kind,lang,current_version_id,updated_at&slug=eq.${slug}&is_published=eq.true`)
+  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&slug=eq.${slug}&is_published=eq.true`)
+  return (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
+}
+
+/** 所有「已上架、類型為說明書、有目前版本」的文件（國家頁的產品清單由這裡自動產生） */
+export async function publishedManuals(): Promise<PublicDoc[]> {
+  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&is_published=eq.true&kind=eq.manual&order=slug.asc`)
   return (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
 }
 

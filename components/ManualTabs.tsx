@@ -1,8 +1,10 @@
 'use client'
+// v0.2.0 | 2026-11-18 | 同一產品有多種語言時，卡片下方顯示語言小按鈕（例：加拿大的 English／Français）
 // v0.1.0 | 2026-11-06 | 說明書區：先選「觸控筆／鍵盤保護殼」，再顯示該分類的產品
 import { useState } from 'react'
 
-export interface ManualItem { slug: string; name: string; url: string; noImage?: boolean }
+export interface ManualAlt { label: string; url: string }
+export interface ManualItem { slug: string; name: string; url: string; noImage?: boolean; alts?: ManualAlt[] }
 export interface ManualGroup { key: string; label: string; items: ManualItem[] }
 
 export default function ManualTabs({ groups, openLabel }: { groups: ManualGroup[]; openLabel: string }) {
@@ -33,9 +35,8 @@ export default function ManualTabs({ groups, openLabel }: { groups: ManualGroup[
       <ul key={current.key} id={`manual-panel-${current.key}`} role="tabpanel"
           className="fade-up grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {current.items.map(p => (
-          <li key={p.slug}>
-            <a href={p.url} target="_blank" rel="noopener noreferrer"
-               className="glass glass-hover group flex h-full flex-col overflow-hidden rounded-2xl">
+          <li key={p.slug} className="glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
+            <a href={p.url} target="_blank" rel="noopener noreferrer" className="group flex flex-1 flex-col">
               {p.noImage ? (
                 <div aria-hidden className="plinth flex aspect-square w-full items-center justify-center text-[22px] font-light tracking-[0.3em] text-[var(--muted)]">eiP</div>
               ) : (
@@ -48,6 +49,16 @@ export default function ManualTabs({ groups, openLabel }: { groups: ManualGroup[
                 <span className="mt-auto pt-3 text-[12px] tracking-wider text-[var(--accent)]">{openLabel} →</span>
               </div>
             </a>
+            {p.alts && p.alts.length > 1 && (
+              <div className="flex flex-wrap gap-1.5 px-4 pb-4">
+                {p.alts.map(a => (
+                  <a key={a.url} href={a.url} target="_blank" rel="noopener noreferrer"
+                     className="rounded-full border border-[var(--rule)] px-2.5 py-0.5 text-[11px] tracking-wider text-[var(--soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]">
+                    {a.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </li>
         ))}
       </ul>

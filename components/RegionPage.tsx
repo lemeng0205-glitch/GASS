@@ -1,32 +1,20 @@
+// v0.7.0 | 2026-11-18 | 說明書清單改由呼叫端傳入（依國家從媒體庫自動產生，見 lib/catalog.ts）
 // v0.6.0 | 2026-11-06 | 移除標題上方的「eiP Service」小字
 // v0.5.0 | 2026-11-06 | 說明書直接顯示，先選「觸控筆／鍵盤保護殼」再看產品（ManualTabs）
 // v0.4.0 | 2026-11-06 | 移除「一鍵複製訂單資訊」；快捷卡片改為 QuickLinks
 // v0.3.0 | 2026-11-05 | 產品依市場（台灣／海外）篩選；尚無圖片的產品顯示 eiP 底座
 // v0.2.0 | 2026-11-04 | 地區服務中心：高級質感版型（快捷入口 + 一鍵複製 + 產品說明書）
 import Link from 'next/link'
-import {
-  COPY, PRODUCTS, PRODUCT_LINES, manualUrl,
-  type PortalLang, type QuickLink, type L10n, type Market,
-} from '@/lib/portalConfig'
+import { COPY, type PortalLang, type QuickLink, type L10n } from '@/lib/portalConfig'
 import PortalHeader from './PortalHeader'
 import QuickLinks from './QuickLinks'
-import ManualTabs from './ManualTabs'
+import ManualTabs, { type ManualGroup } from './ManualTabs'
 
 export default function RegionPage(props: {
-  lang: PortalLang; path: string; market: Market; title: L10n; sub: L10n; links: QuickLink[]
+  lang: PortalLang; path: string; title: L10n; sub: L10n; links: QuickLink[]; groups: ManualGroup[]
 }) {
-  const { lang, path, market, title, sub, links } = props
+  const { lang, path, title, sub, links, groups } = props
   const q = `?lang=${lang}`
-  const groups = PRODUCT_LINES.map(line => ({
-    key: line.key,
-    label: line.label[lang],
-    items: PRODUCTS.filter(p => p.line === line.key && p.markets.includes(market)).map(p => ({
-      slug: p.slug,
-      name: lang === 'en' && p.nameEn ? p.nameEn : p.name,
-      url: manualUrl(p.slug, market),
-      noImage: p.noImage,
-    })),
-  }))
   return (
     <>
       <PortalHeader lang={lang} path={path} />

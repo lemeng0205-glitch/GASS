@@ -1,4 +1,5 @@
 // ================================================
+// v0.4.0 | 2026-11-18 | 各國頁面 /country/<代碼>；說明書連結帶 country 與語言偏好（COUNTRY_LANGS）
 // v0.3.0 | 2026-11-18 | 說明書連結改指本站自己的 /m/（媒體庫已搬到本站資料庫），不再經過 ERP 網址
 // v0.2.0 | 2026-11-05 | 新增 Market（台灣／海外）與英文說明書產品；Pencil 2 與 Pencil 2 Halo 分開
 // v0.1.0 | 2026-11-04 | 獨立網站設定（從 ERP 草稿 feature/portal v0.2.0 搬出）
@@ -22,9 +23,21 @@ export type L10n = Record<PortalLang, string>
  * 用相對路徑，所以日後換網域不用改這裡。
  */
 export const MEDIA_BASE = ''
-/** 海外頁帶 ?lang=en、台灣頁帶 ?lang=zh-TW：同一編號有該語言就直接開；沒有就退回英文 */
-export const manualUrl = (slug: string, market: 'tw' | 'us') =>
-  `${MEDIA_BASE}/m/${slug}?lang=${market === 'us' ? 'en' : 'zh-TW'}`
+/**
+ * 各國優先使用的說明書語言（依順序；找不到時再退回英文）。
+ * 國家頁的說明書連結帶 ?country=<代碼>&lang=<這串>，媒體庫依「顯示國家」與語言挑出該開的那份。
+ */
+export const COUNTRY_LANGS: Record<string, string[]> = {
+  tw: ['zh-TW'],
+  jp: ['ja', 'en'], kr: ['ko', 'en'], de: ['de', 'en'], fr: ['fr', 'en'],
+  ca: ['en', 'fr'], us: ['en'], gb: ['en'], au: ['en'], sg: ['en'],
+  intl: ['en'],
+}
+export const countryLangs = (code: string): string[] => COUNTRY_LANGS[code] ?? ['en']
+
+/** 某國頁面上的說明書連結：交給 /m/ 依國家與語言挑文件（有專屬該國的優先，否則用「全部海外」版） */
+export const manualUrl = (slug: string, country: string, lang?: string) =>
+  `${MEDIA_BASE}/m/${slug}?country=${encodeURIComponent(country)}&lang=${encodeURIComponent(lang ?? countryLangs(country).join(','))}`
 
 /** 兩條軌道：台灣（自建、中文說明書）／海外（英文說明書，所有海外地區同一套） */
 export type Track = 'tw' | 'intl'
@@ -41,25 +54,25 @@ export interface PortalRegion {
   mobileHide?: true      // 手機上地圖太小、點會擠在一起：這個點只在桌面版顯示（下方國家按鈕不受影響）
 }
 
-// 地圖上的釘點：台灣進台灣頁；其他地點全部進同一個海外頁。
+// 地圖上的釘點：台灣進台灣頁；其他地點各進自己的國家頁 /country/<代碼>（顯示專員指定給該國的說明書）。
 // 只標示有銷售或客服管道的地區（標得越多，消費者越會當成「這裡有保固」）。
 export const REGIONS: PortalRegion[] = [
   { code: 'tw', name: { zh: '台灣', en: 'Taiwan' },        lon: 121,  lat: 23.7, href: '/tw', track: 'tw',   labelSide: 'left' },
-  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 139,  lat: 36,   href: '/us', track: 'intl', labelSide: 'right' },
-  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/us', track: 'intl', labelSide: 'top', hoverLabel: true, mobileHide: true },
-  { code: 'sg', name: { zh: '新加坡', en: 'Singapore' },   lon: 104,  lat: 1.3,  href: '/us', track: 'intl', labelSide: 'bottom' },
-  { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/us', track: 'intl', labelSide: 'bottom' },
-  { code: 'us', name: { zh: '美國', en: 'United States' }, lon: -98,  lat: 39,   href: '/us', track: 'intl', labelSide: 'bottom' },
-  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/us', track: 'intl', labelSide: 'top', mobileHide: true },
-  { code: 'gb', name: { zh: '英國', en: 'United Kingdom' }, lon: -2,   lat: 54,   href: '/us', track: 'intl', labelSide: 'top' },
-  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/us', track: 'intl', labelSide: 'right', hoverLabel: true, mobileHide: true },
-  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/us', track: 'intl', labelSide: 'bottom', hoverLabel: true, mobileHide: true },
+  { code: 'jp', name: { zh: '日本', en: 'Japan' },         lon: 139,  lat: 36,   href: '/country/jp', track: 'intl', labelSide: 'right' },
+  { code: 'kr', name: { zh: '韓國', en: 'South Korea' },   lon: 127.5, lat: 37,  href: '/country/kr', track: 'intl', labelSide: 'top', hoverLabel: true, mobileHide: true },
+  { code: 'sg', name: { zh: '新加坡', en: 'Singapore' },   lon: 104,  lat: 1.3,  href: '/country/sg', track: 'intl', labelSide: 'bottom' },
+  { code: 'au', name: { zh: '澳洲', en: 'Australia' },     lon: 134,  lat: -25,  href: '/country/au', track: 'intl', labelSide: 'bottom' },
+  { code: 'us', name: { zh: '美國', en: 'United States' }, lon: -98,  lat: 39,   href: '/country/us', track: 'intl', labelSide: 'bottom' },
+  { code: 'ca', name: { zh: '加拿大', en: 'Canada' },      lon: -106, lat: 56,   href: '/country/ca', track: 'intl', labelSide: 'top', mobileHide: true },
+  { code: 'gb', name: { zh: '英國', en: 'United Kingdom' }, lon: -2,   lat: 54,   href: '/country/gb', track: 'intl', labelSide: 'top' },
+  { code: 'de', name: { zh: '德國', en: 'Germany' },       lon: 10.5, lat: 51,   href: '/country/de', track: 'intl', labelSide: 'right', hoverLabel: true, mobileHide: true },
+  { code: 'fr', name: { zh: '法國', en: 'France' },        lon: 2.5,  lat: 46.5, href: '/country/fr', track: 'intl', labelSide: 'bottom', hoverLabel: true, mobileHide: true },
 ]
 
-/** 首頁下方國家按鈕的最後一顆：沒列出的國家也進同一個海外頁 */
+/** 首頁下方國家按鈕的最後一顆：沒列出的國家，顯示「全部海外」通用的說明書 */
 export const OTHER_REGION: { name: L10n; href: string } = {
   name: { zh: '其他', en: 'Other' },
-  href: '/us',
+  href: '/country/intl',
 }
 
 export const COPY = {
@@ -76,6 +89,8 @@ export const COPY = {
   twSub:      { zh: '說明書、保固登錄與常用資源都在這裡。', en: 'Manuals, warranty registration and resources.' },
   usTitle:    { zh: '海外售後服務中心', en: 'International Service Center' },
   usSub:      { zh: '說明書、保固登錄與常見問題。', en: 'Manuals, warranty registration and FAQ.' },
+  countrySuffix: { zh: '服務中心', en: 'Service Center' },
+  otherGroup: { zh: '其他', en: 'Other' },
 } satisfies Record<string, L10n>
 
 export interface QuickLink { key: string; label: L10n; desc: L10n; href: string }

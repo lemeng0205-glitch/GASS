@@ -1,3 +1,4 @@
+// v0.2.0 | 2026-11-18 | 顯示國家（countries）：create／patch 可帶，list 附 countryOptions
 // v0.1.1 | 2026-11-18 | patch 可帶 view_count（搬遷用）
 // v0.1.0 | 2026-11-18 | 媒體庫管理 API（只給 ERP 伺服器呼叫）
 // 驗證：HMAC 簽章 + 時間戳（見 lib/adminAuth.ts）。驗證失敗一律回 404，不說明原因。
@@ -13,6 +14,7 @@ import {
   type UploadedFileInfo,
 } from '@/lib/mediaDb'
 import { rest } from '@/lib/supabaseRest'
+import { COUNTRY_OPTIONS, inferCountries, normalizeCountries } from '@/lib/countries'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +44,8 @@ export async function POST(req: Request) {
   switch (body.op) {
     case 'list': {
       const items = await listAll()
-      return items ? ok(items) : fail('讀取失敗，請稍後再試', 500)
+      // countryOptions：ERP 後台的「顯示國家」選單用（國家清單只在本站維護一份）
+      return items ? ok(items, { countryOptions: COUNTRY_OPTIONS }) : fail('讀取失敗，請稍後再試', 500)
     }
 
     case 'upload_url': {
@@ -63,10 +66,17 @@ export async function POST(req: Request) {
       if (!title) return fail('請填寫名稱')
       if (!isMediaLang(lang)) return fail('語言不正確')
       if (!isMediaKind(kind)) return fail('類型不正確')
+      // 顯示國家：沒給就依語言推定（繁中 = 台灣、其他 = 全部海外）；有給就必須全部合法
+      let countries = inferCountries(lang)
+      if (body.countries !== undefined) {
+        const c = normalizeCountries(body.countries)
+        if (!c) return fail('顯示國家不正確')
+        countries = c
+      }
       const file = fileInfo(body.file)
       const bad = await validateUpload(slug, lang, file)
       if (bad) return fail(bad)
-      const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, file: file as UploadedFileInfo }, actor)
+      const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, countries, file: file as UploadedFileInfo }, actor)
       return r.error ? fail(r.error, r.status) : ok(r.data)
     }
 
@@ -105,6 +115,11 @@ export async function POST(req: Request) {
       }
       if (body.sku !== undefined) patch.sku = str(body.sku, 64) || null
       if (typeof body.is_published === 'boolean') patch.is_published = body.is_published
+      if (body.countries !== undefined) {
+        const c = normalizeCountries(body.countries)
+        if (!c) return fail('顯示國家不正確（至少選一個）')
+        patch.countries = c
+      }
       // 搬遷用：帶入原本累計的開啟次數（整數 0～10 億）
       if (body.view_count !== undefined) {
         const n = Number(body.view_count)
