@@ -8,7 +8,7 @@
 
 - **獨立專案**：自己的程式庫、自己的部署，不含 ERP 程式、資料庫連線或任何金鑰。
 - **沒有資料庫**：目前是純展示頁。`lib/portalConfig.ts` 以外沒有 `process.env`。
-- 說明書連到 ERP 媒體庫的**公開連結** `https://lemeng-erp.vercel.app/m/<編號>`（`MEDIA_BASE`），只是一般網址，不是資料連線。
+- 說明書由**本站自己**提供：`/m/<編號>`，資料在本站的資料庫（`warranty_media_*`），詳見 `docs/媒體庫搬遷_步驟.md`。維護人員仍在 ERP 後台上傳，ERP 透過簽章管理 API 寫入；ERP 的舊 `/m/` 連結只做轉址。
 - 一鍵複製：只在瀏覽器組字串，不送出任何資料。
 
 ## 開發
@@ -28,7 +28,7 @@ npm run build
 | 保固登錄連結（WordPress 關站前要換） | `lib/portalConfig.ts` → `WARRANTY_TW`、`WARRANTY_GLOBAL` |
 | 產品、說明書編號 | `lib/portalConfig.ts` → `PRODUCTS` |
 | 社群、模板、FAQ 連結 | `lib/portalConfig.ts` → `TW_LINKS`、`US_LINKS` |
-| 說明書網域 | `lib/portalConfig.ts` → `MEDIA_BASE` |
+| 說明書連結 | `lib/portalConfig.ts` → `manualUrl`（相對路徑，換網域不用改） |
 | 安全標頭 | `next.config.mjs` |
 
 ## 海外保固與售後（討論中）

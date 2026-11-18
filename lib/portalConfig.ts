@@ -1,4 +1,5 @@
 // ================================================
+// v0.3.0 | 2026-11-18 | 說明書連結改指本站自己的 /m/（媒體庫已搬到本站資料庫），不再經過 ERP 網址
 // v0.2.0 | 2026-11-05 | 新增 Market（台灣／海外）與英文說明書產品；Pencil 2 與 Pencil 2 Halo 分開
 // v0.1.0 | 2026-11-04 | 獨立網站設定（從 ERP 草稿 feature/portal v0.2.0 搬出）
 // ------------------------------------------------
@@ -16,9 +17,12 @@ export type L10n = Record<PortalLang, string>
 
 // 語言判斷已集中到 lib/lang.ts（middleware 計算）；頁面用 lib/serverLang.ts 的 getLang()
 
-/** 說明書所在位置（ERP 媒體庫的公開連結；若日後換網域，只改這一行） */
-export const MEDIA_BASE = 'https://lemeng-erp.vercel.app'
-/** 海外頁帶 ?lang=en、台灣頁帶 ?lang=zh-TW：同一編號有中英文時直接開對應語言，不用再選（媒體庫 v1.3.0 起支援） */
+/**
+ * 說明書所在位置：本站自己的 /m/<編號>（媒體庫已從 ERP 搬到本站的資料庫，2026-11-18 切換）。
+ * 用相對路徑，所以日後換網域不用改這裡。
+ */
+export const MEDIA_BASE = ''
+/** 海外頁帶 ?lang=en、台灣頁帶 ?lang=zh-TW：同一編號有該語言就直接開；沒有就退回英文 */
 export const manualUrl = (slug: string, market: 'tw' | 'us') =>
   `${MEDIA_BASE}/m/${slug}?lang=${market === 'us' ? 'en' : 'zh-TW'}`
 
