@@ -17,6 +17,7 @@ export interface MediaFile {
   id: string; slug: string; lang: string; title: string; kind: MediaKind; sku: string | null
   is_published: boolean; current_version_id: string | null; view_count: number
   countries: string[]
+  listed: boolean
   created_by: string | null; created_at: string; updated_at: string
 }
 export interface MediaItem extends MediaFile { versions: MediaVersion[] }
@@ -79,12 +80,12 @@ export async function addVersion(mediaId: string, f: UploadedFileInfo, username:
 }
 
 export async function createFile(
-  input: { slug: string; lang: string; title: string; kind: MediaKind; sku: string | null; countries: string[]; file: UploadedFileInfo },
+  input: { slug: string; lang: string; title: string; kind: MediaKind; sku: string | null; countries: string[]; listed: boolean; file: UploadedFileInfo },
   username: string,
 ): Promise<{ data?: MediaFile; error?: string; status?: number }> {
   const ins = await rest<MediaFile[]>(FILES, {
     method: 'POST', returning: true,
-    body: { slug: input.slug, lang: input.lang, title: input.title, kind: input.kind, sku: input.sku, countries: input.countries, created_by: username },
+    body: { slug: input.slug, lang: input.lang, title: input.title, kind: input.kind, sku: input.sku, countries: input.countries, listed: input.listed, created_by: username },
   })
   if (ins.code === '23505') return { error: '這個編號與語言已經有文件了，請改用該文件的「覆蓋」', status: 400 }
   const media = ins.data?.[0]
@@ -162,9 +163,10 @@ export async function publishedBySlug(slug: string): Promise<PublicDoc[]> {
   return (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
 }
 
-/** 所有「已上架、類型為說明書、有目前版本」的文件（國家頁的產品清單由這裡自動產生） */
+/** 所有「已上架、類型為說明書、勾選顯示在保固網站、有目前版本」的文件（國家頁的產品清單由這裡自動產生）。
+ *  沒勾「顯示在保固網站」的文件不會出現在清單，但 /m/<編號> 的 QR 連結照常可用（那邊用 publishedBySlug）。 */
 export async function publishedManuals(): Promise<PublicDoc[]> {
-  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&is_published=eq.true&kind=eq.manual&order=slug.asc`)
+  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&is_published=eq.true&kind=eq.manual&listed=eq.true&order=slug.asc`)
   return (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
 }
 

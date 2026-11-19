@@ -1,16 +1,19 @@
+// v0.1.1 | 2026-11-19 | 國家選項附主要語言（lang）
 // v0.1.0 | 2026-11-18 | 說明書「顯示國家」：可選的國家清單與挑選規則（單一來源，ERP 的選單也向這裡取）
-import { REGIONS, type L10n } from './portalConfig'
+import { COUNTRY_LANGS, REGIONS, type L10n } from './portalConfig'
 
 export const TW = 'tw'
 export const INTL = 'intl'   // 全部海外（預設）
 
-export interface CountryOption { code: string; name: L10n }
+/** lang = 該國主要語言（ERP 上傳表單用來自動帶入語言） */
+export interface CountryOption { code: string; name: L10n; lang: string }
 
 /** 專員可選的國家：台灣、全部海外，再加上地圖上的各國（新增國家：在 portalConfig 的 REGIONS 加一筆） */
+const primaryLang = (code: string) => COUNTRY_LANGS[code]?.[0] ?? 'en'
 export const COUNTRY_OPTIONS: CountryOption[] = [
-  { code: TW, name: { zh: '台灣', en: 'Taiwan' } },
-  { code: INTL, name: { zh: '全部海外', en: 'All overseas' } },
-  ...REGIONS.filter(r => r.track === 'intl').map(r => ({ code: r.code, name: r.name })),
+  { code: TW, name: { zh: '台灣', en: 'Taiwan' }, lang: primaryLang(TW) },
+  { code: INTL, name: { zh: '全部海外', en: 'All overseas' }, lang: primaryLang(INTL) },
+  ...REGIONS.filter(r => r.track === 'intl').map(r => ({ code: r.code, name: r.name, lang: primaryLang(r.code) })),
 ]
 const CODES = new Set(COUNTRY_OPTIONS.map(c => c.code))
 export const isCountryCode = (c: unknown): c is string => typeof c === 'string' && CODES.has(c)
