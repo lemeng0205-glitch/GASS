@@ -1,3 +1,4 @@
+// v0.5.0 | 2026-11-19 | 類別管理（categories_list／category_add／category_patch／category_delete）；list 附 categoryOptions；category 必須是已存在的類別
 // v0.4.0 | 2026-11-19 | 國家管理（countries_list／country_add／country_patch／country_delete）；list 附 languageOptions
 // v0.3.0 | 2026-11-19 | 「顯示在保固網站」（listed）：create／patch 可帶
 // v0.2.0 | 2026-11-18 | 顯示國家（countries）：create／patch 可帶，list 附 countryOptions
@@ -18,6 +19,7 @@ import {
 import { rest } from '@/lib/supabaseRest'
 import { allowedCodes, countryOptionsFrom, inferCountries, normalizeCountries } from '@/lib/countries'
 import { addCountry, addableCountries, deleteCountry, getAllCountries, patchCountry } from '@/lib/countryDb'
+import { addCategory, deleteCategory, getCategories, patchCategory } from '@/lib/categoryDb'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +51,7 @@ export async function POST(req: Request) {
       const items = await listAll()
       // countryOptions／languageOptions：ERP 後台的「顯示國家」與語言選單用（只在本站維護一份）
       return items
-        ? ok(items, { countryOptions: countryOptionsFrom(await getAllCountries()), languageOptions: MEDIA_LANGS })
+        ? ok(items, { countryOptions: countryOptionsFrom(await getAllCountries()), languageOptions: MEDIA_LANGS, categoryOptions: await getCategories() })
         : fail('讀取失敗，請稍後再試', 500)
     }
 
@@ -85,7 +87,8 @@ export async function POST(req: Request) {
       const listed = body.listed !== false
       if (body.scope !== undefined && !isMediaScope(body.scope)) return fail('用途不正確')
       const scope: MediaScope = body.scope === 'general' ? 'general' : 'global'
-      const category = str(body.category, 30) || null
+      const category = str(body.category, 32) || null
+      if (category && !(await getCategories()).some(c => c.key === category)) return fail('類別不存在')
       const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, countries, listed, scope, category, file: file as UploadedFileInfo }, actor)
       return r.error ? fail(r.error, r.status) : ok(r.data)
     }
@@ -124,7 +127,11 @@ export async function POST(req: Request) {
         patch.kind = body.kind
       }
       if (body.sku !== undefined) patch.sku = str(body.sku, 64) || null
-      if (body.category !== undefined) patch.category = str(body.category, 30) || null   // 空字串／null = 清除
+      if (body.category !== undefined) {   // 空字串／null = 清除
+        const c = str(body.category, 32) || null
+        if (c && !(await getCategories()).some(x => x.key === c)) return fail('類別不存在')
+        patch.category = c
+      }
       if (body.scope !== undefined) {
         if (!isMediaScope(body.scope)) return fail('用途不正確')
         patch.scope = body.scope
@@ -197,6 +204,26 @@ export async function POST(req: Request) {
     }
     case 'country_delete': {
       const r = await deleteCountry(str(body.code, 4).toLowerCase())
+      return r.error ? fail(r.error, r.status) : ok(null)
+    }
+
+    // ---- 類別管理（專員在 ERP 新增／改名／排序／刪除說明書類別） ----
+    case 'categories_list':
+      return ok({ categories: await getCategories() })
+    case 'category_add': {
+      const r = await addCategory(str(body.name_zh, 30), str(body.name_en, 60))
+      return r.error ? fail(r.error, r.status) : ok(r.data)
+    }
+    case 'category_patch': {
+      const patch: { nameZh?: string; nameEn?: string; sort?: number } = {}
+      if (body.name_zh !== undefined) patch.nameZh = str(body.name_zh, 30)
+      if (body.name_en !== undefined) patch.nameEn = str(body.name_en, 60)
+      if (body.sort !== undefined) patch.sort = Number(body.sort)
+      const r = await patchCategory(str(body.key, 32), patch)
+      return r.error ? fail(r.error, r.status) : ok(r.data)
+    }
+    case 'category_delete': {
+      const r = await deleteCategory(str(body.key, 32))
       return r.error ? fail(r.error, r.status) : ok(null)
     }
 

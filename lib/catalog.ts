@@ -1,8 +1,10 @@
+// v0.3.0 | 2026-11-19 | 類別清單改由資料庫提供（含英文名稱，海外頁顯示英文）
 // v0.2.0 | 2026-11-19 | 說明書類別：依專員指定的類別分組（觸控筆／鍵盤保護殼／自訂），未指定沿用產品設定
 // v0.1.0 | 2026-11-18 | 國家頁的說明書清單：由媒體庫自動產生（專員上傳並選了國家就會出現）
 // 產品名稱與圖片：portalConfig 的 PRODUCTS 有的用設定；沒有的（新產品）用文件名稱 + eiP 佔位圖。
 import 'server-only'
-import { COPY, PRODUCTS, PRODUCT_LINES, manualUrl, type PortalLang } from './portalConfig'
+import { COPY, PRODUCTS, manualUrl, type PortalLang } from './portalConfig'
+import { getCategories } from './categoryDb'
 import { countryLangsOf, docsForCountry } from './countries'
 import { getAllCountries } from './countryDb'
 import { langLabel } from './mediaConfig'
@@ -35,14 +37,14 @@ export async function catalogFor(country: string, ui: PortalLang): Promise<Manua
     })
   }
 
-  // 內建類別（觸控筆、鍵盤保護殼）→ 專員自訂的類別（依名稱排序）→ 其他
-  const builtin = new Set<string>([...PRODUCT_LINES.map(l => l.key as string), 'other'])
-  const custom = [...new Set(items.map(i => i.line).filter(k => !builtin.has(k)))].sort((a, b) => a.localeCompare(b))
+  // 類別清單來自資料庫（專員在 ERP「類別管理」維護，依排序）；英文介面顯示英文名稱 → 其他
+  const cats = await getCategories()
+  const known = new Set<string>([...cats.map(c => c.key), 'other'])
   const lines = [
-    ...PRODUCT_LINES.map(l => ({ key: l.key as string, label: l.label[ui] })),
-    ...custom.map(k => ({ key: k, label: k })),
+    ...cats.map(c => ({ key: c.key, label: ui === 'en' ? c.nameEn : c.nameZh })),
     { key: 'other', label: COPY.otherGroup[ui] },
   ]
+  for (const i of items) if (!known.has(i.line)) i.line = 'other'   // 類別已被刪除／不存在 → 其他
   return lines.map(g => ({
     key: g.key,
     label: g.label,
