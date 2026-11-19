@@ -32,8 +32,8 @@ export default function RegionBody(props: {
     <>
       <QuickLinks links={links} lang={lang} activeKey={tab} onSelect={select} />
 
-      <section id="manuals" hidden={tab !== 'manuals'} className="mt-16 scroll-mt-24">
-        <h2 className="eyebrow mb-5">{props.manualsTitle}</h2>
+      <section id="manuals" hidden={tab !== 'manuals'} className="mt-10 scroll-mt-24">
+        <h2 className="sr-only">{props.manualsTitle}</h2>
         <ManualTabs groups={groups} openLabel={props.openLabel} />
       </section>
 
