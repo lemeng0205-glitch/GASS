@@ -5,7 +5,7 @@ import 'server-only'
 import { COUNTRY_LANGS, REGIONS, type PortalRegion } from './portalConfig'
 import { rest } from './supabaseRest'
 import { WORLD_COUNTRIES, isWorldCountry } from './worldCountries'
-import { isMediaLang } from './mediaConfig'
+import { isKnownLang } from './languageDb'
 import type { Country } from './countries'
 
 const TABLE = 'warranty_countries'
@@ -86,7 +86,7 @@ export async function patchCountry(code: string, patch: { enabled?: boolean; lan
   if (typeof patch.enabled === 'boolean') body.enabled = patch.enabled
   if (patch.langs !== undefined) {
     const langs = [...new Set(patch.langs)]
-    if (!langs.length || langs.length > 6 || !langs.every(l => isMediaLang(l))) return { error: '語言不正確（1～6 種）', status: 400 }
+    if (!langs.length || langs.length > 6 || !(await Promise.all(langs.map(isKnownLang))).every(Boolean)) return { error: '語言不正確（1～6 種）', status: 400 }
     body.langs = langs
   }
   const r = await rest<Row[]>(`${TABLE}?code=eq.${code}`, { method: 'PATCH', returning: true, body })

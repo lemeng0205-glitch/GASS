@@ -8,7 +8,8 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { PRODUCTS } from '@/lib/portalConfig'
-import { MEDIA_LANGS, langLabel, langPreference } from '@/lib/mediaConfig'
+import { langPreference } from '@/lib/mediaConfig'
+import { getLanguages } from '@/lib/languageDb'
 import { publishedBySlug } from '@/lib/mediaDb'
 import { getLang } from '@/lib/serverLang'
 import { allowedCodes, docsForCountry, isCountryCode } from '@/lib/countries'
@@ -60,7 +61,9 @@ export default async function ManualPage({ params, searchParams }: Props) {
     )
   }
 
-  const order = (l: string) => { const i = MEDIA_LANGS.findIndex(x => x.value === l); return i < 0 ? 99 : i }
+  const langList = await getLanguages()
+  const langLabel = (l: string) => langList.find(x => x.value === l)?.label ?? l
+  const order = (l: string) => { const i = langList.findIndex(x => x.value === l); return i < 0 ? 99 : i }
   const sorted = [...docs].sort((a, b) => order(a.lang) - order(b.lang))
   const product = PRODUCTS.find(p => p.slug === slug)
   const name = product ? (ui === 'en' && product.nameEn ? product.nameEn : product.name) : sorted[0].title

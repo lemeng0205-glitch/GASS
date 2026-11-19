@@ -1,3 +1,4 @@
+// v0.6.0 | 2026-11-19 | 語言管理（languages_list／language_add／language_patch／language_delete）；語言清單改讀資料庫
 // v0.5.0 | 2026-11-19 | 類別管理（categories_list／category_add／category_patch／category_delete）；list 附 categoryOptions；category 必須是已存在的類別
 // v0.4.0 | 2026-11-19 | 國家管理（countries_list／country_add／country_patch／country_delete）；list 附 languageOptions
 // v0.3.0 | 2026-11-19 | 「顯示在保固網站」（listed）：create／patch 可帶
@@ -10,7 +11,7 @@
 import { NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/adminAuth'
 import {
-  MEDIA_LANGS, isMediaKind, isMediaLang, isMediaScope, isUuid, normalizeSlug, type MediaKind, type MediaScope,
+  isMediaKind, isMediaScope, isUuid, normalizeSlug, type MediaKind, type MediaScope,
 } from '@/lib/mediaConfig'
 import {
   addVersion, createFile, deleteFile, downloadUrl, listAll, patchFile, restoreVersion, setCover, uploadUrl, validateUpload,
@@ -19,6 +20,7 @@ import {
 import { rest } from '@/lib/supabaseRest'
 import { allowedCodes, countryOptionsFrom, inferCountries, normalizeCountries } from '@/lib/countries'
 import { addCountry, addableCountries, deleteCountry, getAllCountries, patchCountry } from '@/lib/countryDb'
+import { addLanguage, deleteLanguage, getLanguages, isKnownLang, renameLanguage } from '@/lib/languageDb'
 import { addCategory, deleteCategory, getCategories, patchCategory } from '@/lib/categoryDb'
 
 export const dynamic = 'force-dynamic'
@@ -51,7 +53,7 @@ export async function POST(req: Request) {
       const items = await listAll()
       // countryOptions／languageOptions：ERP 後台的「顯示國家」與語言選單用（只在本站維護一份）
       return items
-        ? ok(items, { countryOptions: countryOptionsFrom(await getAllCountries()), languageOptions: MEDIA_LANGS, categoryOptions: await getCategories() })
+        ? ok(items, { countryOptions: countryOptionsFrom(await getAllCountries()), languageOptions: await getLanguages(), categoryOptions: await getCategories() })
         : fail('讀取失敗，請稍後再試', 500)
     }
 
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
       const slug = normalizeSlug(str(body.slug, 80))
       const lang = str(body.lang, 12)
       if (!slug || !lang) return fail('缺少連結編號或語言')
-      if (!isMediaLang(lang)) return fail('語言不正確')
+      if (!(await isKnownLang(lang))) return fail('語言不正確')
       const r = await uploadUrl(slug, lang, str(body.mime, 120), Number(body.size) || 0)
       return 'error' in r ? fail(r.error) : ok({ path: r.path, token: r.token })
     }
@@ -71,7 +73,7 @@ export async function POST(req: Request) {
       const kind = (body.kind ?? 'manual') as unknown
       if (!slug) return fail('連結編號只能用英文、數字、- 與 _（最多 64 字）')
       if (!title) return fail('請填寫名稱')
-      if (!isMediaLang(lang)) return fail('語言不正確')
+      if (!(await isKnownLang(lang))) return fail('語言不正確')
       if (!isMediaKind(kind)) return fail('類型不正確')
       // 顯示國家：沒給就依語言推定（繁中 = 台灣、其他 = 全部海外）；有給就必須全部合法
       let countries = inferCountries(lang)
@@ -114,7 +116,7 @@ export async function POST(req: Request) {
         patch.slug = s
       }
       if (body.lang !== undefined) {
-        if (!isMediaLang(body.lang)) return fail('語言不正確')
+        if (!(await isKnownLang(body.lang))) return fail('語言不正確')
         patch.lang = body.lang
       }
       if (body.title !== undefined) {
@@ -183,7 +185,7 @@ export async function POST(req: Request) {
     // ---- 國家管理（專員在 ERP 新增／停用／調整語言／刪除國家） ----
     case 'countries_list': {
       const all = await getAllCountries()
-      return ok({ countries: all, addable: addableCountries(all), languages: MEDIA_LANGS })
+      return ok({ countries: all, addable: addableCountries(all), languages: await getLanguages() })
     }
     case 'country_add': {
       const r = await addCountry(str(body.code, 4).toLowerCase())
@@ -224,6 +226,22 @@ export async function POST(req: Request) {
     }
     case 'category_delete': {
       const r = await deleteCategory(str(body.key, 32))
+      return r.error ? fail(r.error, r.status) : ok(null)
+    }
+
+    // ---- 語言管理（專員在 ERP 新增海外語言／改顯示名稱／刪除） ----
+    case 'languages_list':
+      return ok({ languages: await getLanguages() })
+    case 'language_add': {
+      const r = await addLanguage(str(body.code, 16), str(body.label, 40))
+      return r.error ? fail(r.error, r.status) : ok(r.data)
+    }
+    case 'language_patch': {
+      const r = await renameLanguage(str(body.code, 16), str(body.label, 40))
+      return r.error ? fail(r.error, r.status) : ok(r.data)
+    }
+    case 'language_delete': {
+      const r = await deleteLanguage(str(body.code, 16))
       return r.error ? fail(r.error, r.status) : ok(null)
     }
 

@@ -1,3 +1,4 @@
+// v0.4.0 | 2026-11-19 | 每個產品都帶語言標籤；語言名稱讀資料庫
 // v0.3.0 | 2026-11-19 | 類別清單改由資料庫提供（含英文名稱，海外頁顯示英文）
 // v0.2.0 | 2026-11-19 | 說明書類別：依專員指定的類別分組（觸控筆／鍵盤保護殼／自訂），未指定沿用產品設定
 // v0.1.0 | 2026-11-18 | 國家頁的說明書清單：由媒體庫自動產生（專員上傳並選了國家就會出現）
@@ -7,7 +8,7 @@ import { COPY, PRODUCTS, manualUrl, type PortalLang } from './portalConfig'
 import { getCategories } from './categoryDb'
 import { countryLangsOf, docsForCountry } from './countries'
 import { getAllCountries } from './countryDb'
-import { langLabel } from './mediaConfig'
+import { getLanguages, labelMap } from './languageDb'
 import { publishedManuals, type PublicDoc } from './mediaDb'
 import type { ManualGroup, ManualItem } from '@/components/ManualTabs'
 
@@ -15,6 +16,8 @@ export async function catalogFor(country: string, ui: PortalLang): Promise<Manua
   const bySlug = new Map<string, PublicDoc[]>()
   for (const d of await publishedManuals()) bySlug.set(d.slug, [...(bySlug.get(d.slug) ?? []), d])
 
+  const langName = labelMap(await getLanguages())
+  const langLabel = (l: string) => langName.get(l) ?? l
   const pref = countryLangsOf(country, await getAllCountries())
   const rank = (l: string) => { const i = pref.indexOf(l); return i < 0 ? 99 : i }
   const items: Array<ManualItem & { line: string; order: number }> = []
@@ -30,7 +33,7 @@ export async function catalogFor(country: string, ui: PortalLang): Promise<Manua
       name: meta ? (ui === 'en' && meta.nameEn ? meta.nameEn : meta.name) : main.title,
       url: manualUrl(slug, country, pref),
       noImage: !meta || !!meta.noImage,
-      alts: langs.length > 1 ? langs.map(l => ({ label: langLabel(l), url: manualUrl(slug, country, pref, l) })) : undefined,
+      alts: langs.map(l => ({ label: langLabel(l), url: manualUrl(slug, country, pref, l) })),   // 單一語言也帶（卡片上顯示語言標籤）
       // 專員在媒體庫指定的類別優先；沒指定就用產品設定檔的分類，都沒有歸「其他」
       line: (chosen.find(d => d.category)?.category || meta?.line || 'other') as string,
       order: meta ? PRODUCTS.indexOf(meta) : 10_000,

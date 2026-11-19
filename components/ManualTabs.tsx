@@ -1,3 +1,4 @@
+// v0.3.0 | 2026-11-19 | 每張說明書卡片都顯示語言標籤（多語言可點選、單一語言為純標示）
 'use client'
 // v0.2.0 | 2026-11-18 | 同一產品有多種語言時，卡片下方顯示語言小按鈕（例：加拿大的 English／Français）
 // v0.1.0 | 2026-11-06 | 說明書區：先選「觸控筆／鍵盤保護殼」，再顯示該分類的產品
@@ -49,14 +50,17 @@ export default function ManualTabs({ groups, openLabel }: { groups: ManualGroup[
                 <span className="mt-auto pt-3 text-[12px] tracking-wider text-[var(--accent)]">{openLabel} →</span>
               </div>
             </a>
-            {p.alts && p.alts.length > 1 && (
+            {p.alts && p.alts.length > 0 && (
               <div className="flex flex-wrap gap-1.5 px-4 pb-4">
-                {p.alts.map(a => (
+                {p.alts.length > 1 ? p.alts.map(a => (
                   <a key={a.url} href={a.url} target="_blank" rel="noopener noreferrer"
                      className="rounded-full border border-[var(--rule)] px-2.5 py-0.5 text-[11px] tracking-wider text-[var(--soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]">
                     {a.label}
                   </a>
-                ))}
+                )) : (
+                  // 只有一種語言：不用連結，只標示這份說明書是什麼語言
+                  <span className="rounded-full border border-[var(--rule)] px-2.5 py-0.5 text-[11px] tracking-wider text-[var(--soft)]">{p.alts[0].label}</span>
+                )}
               </div>
             )}
           </li>
