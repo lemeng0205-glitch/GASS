@@ -1,3 +1,4 @@
+// v0.4.0 | 2026-11-19 | 國家管理（countries_list／country_add／country_patch／country_delete）；list 附 languageOptions
 // v0.3.0 | 2026-11-19 | 「顯示在保固網站」（listed）：create／patch 可帶
 // v0.2.0 | 2026-11-18 | 顯示國家（countries）：create／patch 可帶，list 附 countryOptions
 // v0.1.1 | 2026-11-18 | patch 可帶 view_count（搬遷用）
@@ -8,14 +9,15 @@
 import { NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/adminAuth'
 import {
-  isMediaKind, isMediaLang, isUuid, normalizeSlug, type MediaKind,
+  MEDIA_LANGS, isMediaKind, isMediaLang, isUuid, normalizeSlug, type MediaKind,
 } from '@/lib/mediaConfig'
 import {
   addVersion, createFile, deleteFile, downloadUrl, listAll, patchFile, restoreVersion, uploadUrl, validateUpload,
   type UploadedFileInfo,
 } from '@/lib/mediaDb'
 import { rest } from '@/lib/supabaseRest'
-import { COUNTRY_OPTIONS, inferCountries, normalizeCountries } from '@/lib/countries'
+import { allowedCodes, countryOptionsFrom, inferCountries, normalizeCountries } from '@/lib/countries'
+import { addCountry, addableCountries, deleteCountry, getAllCountries, patchCountry } from '@/lib/countryDb'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,8 +47,10 @@ export async function POST(req: Request) {
   switch (body.op) {
     case 'list': {
       const items = await listAll()
-      // countryOptions：ERP 後台的「顯示國家」選單用（國家清單只在本站維護一份）
-      return items ? ok(items, { countryOptions: COUNTRY_OPTIONS }) : fail('讀取失敗，請稍後再試', 500)
+      // countryOptions／languageOptions：ERP 後台的「顯示國家」與語言選單用（只在本站維護一份）
+      return items
+        ? ok(items, { countryOptions: countryOptionsFrom(await getAllCountries()), languageOptions: MEDIA_LANGS })
+        : fail('讀取失敗，請稍後再試', 500)
     }
 
     case 'upload_url': {
@@ -70,7 +74,7 @@ export async function POST(req: Request) {
       // 顯示國家：沒給就依語言推定（繁中 = 台灣、其他 = 全部海外）；有給就必須全部合法
       let countries = inferCountries(lang)
       if (body.countries !== undefined) {
-        const c = normalizeCountries(body.countries)
+        const c = normalizeCountries(body.countries, allowedCodes(await getAllCountries()))
         if (!c) return fail('顯示國家不正確')
         countries = c
       }
@@ -123,7 +127,7 @@ export async function POST(req: Request) {
         patch.listed = body.listed
       }
       if (body.countries !== undefined) {
-        const c = normalizeCountries(body.countries)
+        const c = normalizeCountries(body.countries, allowedCodes(await getAllCountries()))
         if (!c) return fail('顯示國家不正確（至少選一個）')
         patch.countries = c
       }
@@ -153,6 +157,33 @@ export async function POST(req: Request) {
       if (body.version_id !== undefined && !isUuid(body.version_id)) return fail('版本不正確')
       const r = await downloadUrl(id, body.version_id as string | undefined)
       return 'error' in r ? fail(r.error, r.status) : ok({ url: r.url })
+    }
+
+    // ---- 國家管理（專員在 ERP 新增／停用／調整語言／刪除國家） ----
+    case 'countries_list': {
+      const all = await getAllCountries()
+      return ok({ countries: all, addable: addableCountries(all), languages: MEDIA_LANGS })
+    }
+    case 'country_add': {
+      const r = await addCountry(str(body.code, 4).toLowerCase())
+      return r.error ? fail(r.error, r.status) : ok(r.data)
+    }
+    case 'country_patch': {
+      const patch: { enabled?: boolean; langs?: string[] } = {}
+      if (body.enabled !== undefined) {
+        if (typeof body.enabled !== 'boolean') return fail('啟用狀態不正確')
+        patch.enabled = body.enabled
+      }
+      if (body.langs !== undefined) {
+        if (!Array.isArray(body.langs)) return fail('語言不正確')
+        patch.langs = body.langs.map(l => (typeof l === 'string' ? l : ''))
+      }
+      const r = await patchCountry(str(body.code, 4).toLowerCase(), patch)
+      return r.error ? fail(r.error, r.status) : ok(r.data)
+    }
+    case 'country_delete': {
+      const r = await deleteCountry(str(body.code, 4).toLowerCase())
+      return r.error ? fail(r.error, r.status) : ok(null)
     }
 
     default:

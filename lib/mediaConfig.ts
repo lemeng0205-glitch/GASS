@@ -34,7 +34,7 @@ export const MEDIA_KINDS = ['manual', 'image', 'document', 'other'] as const
 export type MediaKind = (typeof MEDIA_KINDS)[number]
 export const isMediaKind = (k: unknown): k is MediaKind => typeof k === 'string' && (MEDIA_KINDS as readonly string[]).includes(k)
 
-/** 可用的語言。新增語言只要加在這裡（資料庫不限制語言值）；label 是消費者選擇頁上顯示的名稱 */
+/** 可用的語言（ERP 後台的語言選單向本站取得，只維護這一份）。新增語言只要加在這裡（資料庫不限制語言值）；label 是消費者選擇頁上顯示的名稱 */
 export const MEDIA_LANGS: Array<{ value: string; label: string }> = [
   { value: 'zh-TW', label: '繁體中文' },
   { value: 'en',    label: 'English' },
@@ -42,6 +42,18 @@ export const MEDIA_LANGS: Array<{ value: string; label: string }> = [
   { value: 'ko',    label: '한국어' },
   { value: 'de',    label: 'Deutsch' },
   { value: 'fr',    label: 'Français' },
+  { value: 'es', label: 'Español' },
+  { value: 'it', label: 'Italiano' },
+  { value: 'pt', label: 'Português' },
+  { value: 'nl', label: 'Nederlands' },
+  { value: 'pl', label: 'Polski' },
+  { value: 'th', label: 'ไทย' },
+  { value: 'vi', label: 'Tiếng Việt' },
+  { value: 'id', label: 'Bahasa Indonesia' },
+  { value: 'ms', label: 'Bahasa Melayu' },
+  { value: 'tr', label: 'Türkçe' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'ru', label: 'Русский' },
   { value: 'zh-CN', label: '简体中文' },
 ]
 export const isMediaLang = (l: unknown): l is string => typeof l === 'string' && MEDIA_LANGS.some(x => x.value === l)

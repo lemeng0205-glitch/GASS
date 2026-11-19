@@ -1,9 +1,11 @@
+// v0.6.0 | 2026-11-19 | 地圖與國家按鈕改由資料庫的國家清單產生（專員可自己新增國家）
 // v0.5.0 | 2026-11-05 | 下方改為「台灣」大按鈕 + 各國小按鈕（日本、美國…全部進同一個海外頁），滑過國家按鈕時地圖對應的點亮起
 // v0.4.0 | 2026-11-05 | 首頁兩條軌道：台灣／海外。地圖顯示海外各地；語言依瀏覽器判斷
 // v0.3.0 | 2026-11-05 | 地圖滿版無框、一個畫面放得下
 // 保固承諾區塊：正式條款未提供前不顯示（避免公開頁出現「待提供」字樣）。
 import Link from 'next/link'
-import { COPY, REGIONS, OTHER_REGION } from '@/lib/portalConfig'
+import { COPY, OTHER_REGION } from '@/lib/portalConfig'
+import { getCountries, regionsFor } from '@/lib/countryDb'
 import { getLang } from '@/lib/serverLang'
 import PortalHeader from '@/components/PortalHeader'
 import WorldMap from '@/components/WorldMap'
@@ -17,8 +19,10 @@ export default async function Home({ searchParams }: Props) {
   const lang = await getLang()
   const q = explicitLang ? `?lang=${lang}` : ''
 
-  const taiwan = REGIONS.find(r => r.track === 'tw')!
-  const countries = REGIONS.filter(r => r.track === 'intl')
+  // 台灣 + 啟用中的海外國家（專員在 ERP「國家管理」新增／停用，資料庫讀不到時用內建的 9 個）
+  const regions = regionsFor(await getCountries())
+  const taiwan = regions.find(r => r.track === 'tw')!
+  const countries = regions.filter(r => r.track === 'intl')
 
   // 滑過某國按鈕 ↔ 地圖上同一個國家的點，彼此呼應（只有常數代碼，沒有使用者輸入）
   const hoverCss = countries.map(c =>
@@ -42,7 +46,7 @@ export default async function Home({ searchParams }: Props) {
         </section>
 
         <div className="fade-up d3 flex flex-1 items-center justify-center overflow-hidden py-6 sm:py-8">
-          <WorldMap regions={REGIONS} lang={lang} comingSoon={COPY.comingSoon[lang]} explicitLang={explicitLang} />
+          <WorldMap regions={regions} lang={lang} comingSoon={COPY.comingSoon[lang]} explicitLang={explicitLang} />
         </div>
 
         <section className="fade-up d4 px-5 pb-10 sm:pb-12">

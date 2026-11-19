@@ -11,7 +11,8 @@ import { PRODUCTS } from '@/lib/portalConfig'
 import { MEDIA_LANGS, langLabel, langPreference } from '@/lib/mediaConfig'
 import { publishedBySlug } from '@/lib/mediaDb'
 import { getLang } from '@/lib/serverLang'
-import { docsForCountry, isCountryCode } from '@/lib/countries'
+import { allowedCodes, docsForCountry, isCountryCode } from '@/lib/countries'
+import { getAllCountries } from '@/lib/countryDb'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: '產品資料 | Product manuals' }
@@ -31,7 +32,9 @@ export default async function ManualPage({ params, searchParams }: Props) {
   const slug = safeSlug((await params).slug)
   const sp = await searchParams
   const langParam = sp.lang
-  const country = typeof sp.country === 'string' && isCountryCode(sp.country) ? sp.country : null
+  // 國家代碼要在清單內（含已停用的，舊連結才不會失效）；亂填的忽略
+  const country = typeof sp.country === 'string' && sp.country
+    && isCountryCode(sp.country, allowedCodes(await getAllCountries(), true)) ? sp.country : null
   const ui = await getLang()
   const t = T[ui]
 

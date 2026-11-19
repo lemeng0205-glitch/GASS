@@ -1,4 +1,5 @@
 // ================================================
+// v0.5.0 | 2026-11-19 | 國家清單改存資料庫；manualUrl 由呼叫端傳入語言順序；REGIONS 變成備用／初始資料
 // v0.4.0 | 2026-11-18 | 各國頁面 /country/<代碼>；說明書連結帶 country 與語言偏好（COUNTRY_LANGS）
 // v0.3.0 | 2026-11-18 | 說明書連結改指本站自己的 /m/（媒體庫已搬到本站資料庫），不再經過 ERP 網址
 // v0.2.0 | 2026-11-05 | 新增 Market（台灣／海外）與英文說明書產品；Pencil 2 與 Pencil 2 Halo 分開
@@ -24,20 +25,20 @@ export type L10n = Record<PortalLang, string>
  */
 export const MEDIA_BASE = ''
 /**
- * 各國優先使用的說明書語言（依順序；找不到時再退回英文）。
- * 國家頁的說明書連結帶 ?country=<代碼>&lang=<這串>，媒體庫依「顯示國家」與語言挑出該開的那份。
+ * 目前地圖上已有的 9 個海外國家的說明書語言（依優先順序；找不到時再退回英文）。
+ * 這只是「資料庫讀不到時的備用清單」與初始資料；正式的國家清單與語言存在資料庫，專員在 ERP「國家管理」維護。
  */
 export const COUNTRY_LANGS: Record<string, string[]> = {
-  tw: ['zh-TW'],
   jp: ['ja', 'en'], kr: ['ko', 'en'], de: ['de', 'en'], fr: ['fr', 'en'],
   ca: ['en', 'fr'], us: ['en'], gb: ['en'], au: ['en'], sg: ['en'],
-  intl: ['en'],
 }
-export const countryLangs = (code: string): string[] => COUNTRY_LANGS[code] ?? ['en']
 
-/** 某國頁面上的說明書連結：交給 /m/ 依國家與語言挑文件（有專屬該國的優先，否則用「全部海外」版） */
-export const manualUrl = (slug: string, country: string, lang?: string) =>
-  `${MEDIA_BASE}/m/${slug}?country=${encodeURIComponent(country)}&lang=${encodeURIComponent(lang ?? countryLangs(country).join(','))}`
+/**
+ * 某國頁面上的說明書連結：交給 /m/ 依國家與語言挑文件（有專屬該國的優先，否則用「全部海外」版）。
+ * langs = 該國的語言偏好順序（由資料庫的國家清單提供）。
+ */
+export const manualUrl = (slug: string, country: string, langs: string[], lang?: string) =>
+  `${MEDIA_BASE}/m/${slug}?country=${encodeURIComponent(country)}&lang=${encodeURIComponent(lang ?? (langs.length ? langs : ['en']).join(','))}`
 
 /** 兩條軌道：台灣（自建、中文說明書）／海外（英文說明書，所有海外地區同一套） */
 export type Track = 'tw' | 'intl'

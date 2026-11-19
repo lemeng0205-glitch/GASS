@@ -1,8 +1,9 @@
 // v0.1.0 | 2026-11-18 | 國家頁的說明書清單：由媒體庫自動產生（專員上傳並選了國家就會出現）
 // 產品名稱與圖片：portalConfig 的 PRODUCTS 有的用設定；沒有的（新產品）用文件名稱 + eiP 佔位圖。
 import 'server-only'
-import { COPY, PRODUCTS, PRODUCT_LINES, countryLangs, manualUrl, type PortalLang } from './portalConfig'
-import { docsForCountry } from './countries'
+import { COPY, PRODUCTS, PRODUCT_LINES, manualUrl, type PortalLang } from './portalConfig'
+import { countryLangsOf, docsForCountry } from './countries'
+import { getAllCountries } from './countryDb'
 import { langLabel } from './mediaConfig'
 import { publishedManuals, type PublicDoc } from './mediaDb'
 import type { ManualGroup, ManualItem } from '@/components/ManualTabs'
@@ -11,7 +12,7 @@ export async function catalogFor(country: string, ui: PortalLang): Promise<Manua
   const bySlug = new Map<string, PublicDoc[]>()
   for (const d of await publishedManuals()) bySlug.set(d.slug, [...(bySlug.get(d.slug) ?? []), d])
 
-  const pref = countryLangs(country)
+  const pref = countryLangsOf(country, await getAllCountries())
   const rank = (l: string) => { const i = pref.indexOf(l); return i < 0 ? 99 : i }
   const items: Array<ManualItem & { line: string; order: number }> = []
 
@@ -24,9 +25,9 @@ export async function catalogFor(country: string, ui: PortalLang): Promise<Manua
     items.push({
       slug,
       name: meta ? (ui === 'en' && meta.nameEn ? meta.nameEn : meta.name) : main.title,
-      url: manualUrl(slug, country),
+      url: manualUrl(slug, country, pref),
       noImage: !meta || !!meta.noImage,
-      alts: langs.length > 1 ? langs.map(l => ({ label: langLabel(l), url: manualUrl(slug, country, l) })) : undefined,
+      alts: langs.length > 1 ? langs.map(l => ({ label: langLabel(l), url: manualUrl(slug, country, pref, l) })) : undefined,
       line: meta?.line ?? 'other',
       order: meta ? PRODUCTS.indexOf(meta) : 10_000,
     })

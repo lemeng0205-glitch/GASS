@@ -4,27 +4,30 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import RegionPage from '@/components/RegionPage'
 import { COPY, US_LINKS, type L10n } from '@/lib/portalConfig'
-import { INTL, countryName, isCountryPage } from '@/lib/countries'
+import { INTL, countryName, isCountryPage, type Country } from '@/lib/countries'
+import { getCountries } from '@/lib/countryDb'
 import { catalogFor } from '@/lib/catalog'
 import { getLang } from '@/lib/serverLang'
 
 type Props = { params: Promise<{ code: string }> }
 
-function titleFor(code: string): L10n {
-  const n = countryName(code)
+function titleFor(code: string, list: Country[]): L10n {
+  const n = countryName(code, list)
   if (code === INTL || !n) return COPY.usTitle
   return { zh: `${n.zh}${COPY.countrySuffix.zh}`, en: `${n.en} ${COPY.countrySuffix.en}` }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
-  return isCountryPage(code) ? { title: `${titleFor(code).en} | eiP` } : {}
+  const list = await getCountries()
+  return isCountryPage(code, list) ? { title: `${titleFor(code, list).en} | eiP` } : {}
 }
 
 export default async function Page({ params }: Props) {
   const { code } = await params
-  if (!isCountryPage(code)) notFound()
+  const list = await getCountries()
+  if (!isCountryPage(code, list)) notFound()
   const lang = await getLang()
   const groups = await catalogFor(code, lang)
-  return <RegionPage lang={lang} path={`/country/${code}`} title={titleFor(code)} sub={COPY.usSub} links={US_LINKS} groups={groups} />
+  return <RegionPage lang={lang} path={`/country/${code}`} title={titleFor(code, list)} sub={COPY.usSub} links={US_LINKS} groups={groups} />
 }
