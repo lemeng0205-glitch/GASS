@@ -38,8 +38,9 @@ export default function RegionBody(props: {
       </section>
 
       {hasTemplates && (
-        <section id="templates" hidden={tab !== 'templates'} className="mt-16 scroll-mt-24">
-          <h2 className="eyebrow mb-5">{props.templatesTitle}</h2>
+        <section id="templates" hidden={tab !== 'templates'} className="mt-10 scroll-mt-24">
+          {/* 畫面上不顯示標題（上方卡片已經標示是「電子模板」），只留給螢幕閱讀器 */}
+          <h2 className="sr-only">{props.templatesTitle}</h2>
           <TemplateList items={templates} downloadLabel={props.downloadLabel} />
         </section>
       )}
