@@ -1,3 +1,4 @@
+// v0.3.0 | 2026-11-19 | 給 onSelect 時，# 開頭的卡片改為「切換下方內容」按鈕，選中的卡片亮起
 // v0.2.0 | 2026-11-06 | 說明書改為直接顯示，「產品說明書」卡片改為捲動到說明書區（不再需要狀態）
 // v0.1.0 | 2026-11-06 | 快捷入口卡片（圖示、編號、細線動效）
 import type { PortalLang, QuickLink } from '@/lib/portalConfig'
@@ -18,17 +19,25 @@ function Icon({ name }: { name: string }) {
   )
 }
 
-export default function QuickLinks({ links, lang }: { links: QuickLink[]; lang: PortalLang }) {
+export default function QuickLinks({ links, lang, activeKey, onSelect }: {
+  links: QuickLink[]; lang: PortalLang
+  /** 目前選中的卡片（只對 # 開頭的「切換下方內容」卡片有效） */
+  activeKey?: string; onSelect?: (key: string) => void
+}) {
   const grid = links.length === 4 ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'
   return (
     <section className={`fade-up d3 grid gap-3 ${grid}`}>
       {links.map((l, i) => {
         const anchor = l.href.startsWith('#')
         const external = l.href.startsWith('http')
-        return (
-          <a key={l.key} href={l.href}
-             {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-             className="glass glass-hover group relative flex flex-col overflow-hidden rounded-2xl p-5 text-left sm:p-6">
+        const switcher = anchor && !!onSelect          // 給了 onSelect：# 卡片改成「切換下方內容」的按鈕
+        const active = switcher && activeKey === l.key
+        const cls = `glass glass-hover group relative flex flex-col overflow-hidden rounded-2xl p-5 text-left sm:p-6${active ? ' ring-1 ring-[var(--accent)]' : ''}`
+        const card = (children: React.ReactNode) => switcher
+          ? <button key={l.key} type="button" aria-pressed={active} onClick={() => onSelect?.(l.key)} className={cls}>{children}</button>
+          : <a key={l.key} href={l.href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className={cls}>{children}</a>
+        return card(
+          <>
             <span className="flex items-start justify-between">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f5f1] text-[var(--accent)] ring-1 ring-[var(--rule)] transition-colors duration-300 group-hover:bg-[var(--accent)] group-hover:text-white group-hover:ring-[var(--accent)]">
                 <Icon name={l.key} />
@@ -41,8 +50,8 @@ export default function QuickLinks({ links, lang }: { links: QuickLink[]; lang: 
                 anchor ? 'rotate-90 group-hover:translate-y-0.5' : 'group-hover:translate-x-1'}`}>→</span>
             </span>
             <span className="mt-2 text-[13px] leading-snug text-[var(--soft)]">{l.desc[lang]}</span>
-            <span aria-hidden className="absolute inset-x-0 bottom-0 h-[2px] origin-left scale-x-0 bg-[var(--accent)] transition-transform duration-500 group-hover:scale-x-100" />
-          </a>
+            <span aria-hidden className={`absolute inset-x-0 bottom-0 h-[2px] origin-left bg-[var(--accent)] transition-transform duration-500 ${active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
+          </>,
         )
       })}
     </section>

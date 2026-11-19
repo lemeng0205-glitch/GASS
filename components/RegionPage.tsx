@@ -1,3 +1,4 @@
+// v0.8.0 | 2026-11-19 | 「產品說明書」「電子模板」卡片改為切換下方內容（RegionBody）；電子模板清單由媒體庫自動產生
 // v0.7.0 | 2026-11-18 | 說明書清單改由呼叫端傳入（依國家從媒體庫自動產生，見 lib/catalog.ts）
 // v0.6.0 | 2026-11-06 | 移除標題上方的「eiP Service」小字
 // v0.5.0 | 2026-11-06 | 說明書直接顯示，先選「觸控筆／鍵盤保護殼」再看產品（ManualTabs）
@@ -7,9 +8,8 @@
 import Link from 'next/link'
 import { COPY, type PortalLang, type QuickLink, type L10n } from '@/lib/portalConfig'
 import PortalHeader from './PortalHeader'
-import QuickLinks from './QuickLinks'
-import ManualTabs, { type ManualGroup } from './ManualTabs'
-import TemplateList from './TemplateList'
+import RegionBody from './RegionBody'
+import type { ManualGroup } from './ManualTabs'
 import type { TemplateItem } from '@/lib/templates'
 
 export default function RegionPage(props: {
@@ -35,19 +35,10 @@ export default function RegionPage(props: {
           <p className="fade-up d2 mt-4 max-w-xl text-[15px] leading-relaxed text-[var(--soft)]">{sub[lang]}</p>
         </section>
 
-        <QuickLinks links={links} lang={lang} />
-
-        <section id="manuals" className="mt-16 scroll-mt-24">
-          <h2 className="eyebrow mb-5">{COPY.manuals[lang]}</h2>
-          <ManualTabs groups={groups} openLabel={COPY.openManual[lang]} />
-        </section>
-
-        {templates.length > 0 && (
-          <section id="templates" className="mt-16 scroll-mt-24">
-            <h2 className="eyebrow mb-5">{COPY.templates[lang]}</h2>
-            <TemplateList items={templates} downloadLabel={COPY.download[lang]} />
-          </section>
-        )}
+        {/* 點「產品說明書」「電子模板」卡片 → 下方內容切換（RegionBody 是 client component） */}
+        <RegionBody lang={lang} links={links} groups={groups} templates={templates}
+          manualsTitle={COPY.manuals[lang]} templatesTitle={COPY.templates[lang]}
+          openLabel={COPY.openManual[lang]} downloadLabel={COPY.download[lang]} />
       </main>
       <footer className="border-t border-[var(--rule)] py-8 text-center text-[11px] tracking-[0.2em] text-[var(--muted)]">
         © {new Date().getFullYear()} LEMENG · eiP
