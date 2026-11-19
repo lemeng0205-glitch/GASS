@@ -85,7 +85,8 @@ export async function POST(req: Request) {
       const listed = body.listed !== false
       if (body.scope !== undefined && !isMediaScope(body.scope)) return fail('用途不正確')
       const scope: MediaScope = body.scope === 'general' ? 'general' : 'global'
-      const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, countries, listed, scope, file: file as UploadedFileInfo }, actor)
+      const category = str(body.category, 30) || null
+      const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, countries, listed, scope, category, file: file as UploadedFileInfo }, actor)
       return r.error ? fail(r.error, r.status) : ok(r.data)
     }
 
@@ -123,6 +124,7 @@ export async function POST(req: Request) {
         patch.kind = body.kind
       }
       if (body.sku !== undefined) patch.sku = str(body.sku, 64) || null
+      if (body.category !== undefined) patch.category = str(body.category, 30) || null   // 空字串／null = 清除
       if (body.scope !== undefined) {
         if (!isMediaScope(body.scope)) return fail('用途不正確')
         patch.scope = body.scope

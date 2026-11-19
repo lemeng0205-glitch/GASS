@@ -20,6 +20,7 @@ export interface MediaFile {
   listed: boolean
   scope: MediaScope
   cover_path: string | null          // 預覽圖（例如 PDF 第一頁），存在同一個 bucket
+  category?: string | null           // 說明書類別：stylus／keyboard／自訂名稱（009）
   created_by: string | null; created_at: string; updated_at: string
 }
 export interface MediaItem extends MediaFile { versions: MediaVersion[] }
@@ -83,12 +84,13 @@ export async function addVersion(mediaId: string, f: UploadedFileInfo, username:
 }
 
 export async function createFile(
-  input: { slug: string; lang: string; title: string; kind: MediaKind; sku: string | null; countries: string[]; listed: boolean; scope: MediaScope; file: UploadedFileInfo },
+  input: { slug: string; lang: string; title: string; kind: MediaKind; sku: string | null; countries: string[]; listed: boolean; scope: MediaScope; category?: string | null; file: UploadedFileInfo },
   username: string,
 ): Promise<{ data?: MediaFile; error?: string; status?: number }> {
   const ins = await rest<MediaFile[]>(FILES, {
     method: 'POST', returning: true,
-    body: { slug: input.slug, lang: input.lang, title: input.title, kind: input.kind, sku: input.sku, countries: input.countries, listed: input.listed, scope: input.scope, created_by: username },
+    body: { slug: input.slug, lang: input.lang, title: input.title, kind: input.kind, sku: input.sku, countries: input.countries, listed: input.listed, scope: input.scope, created_by: username,
+            ...(input.category ? { category: input.category } : {}) },   // 沒指定就不送，009 還沒執行時照常能上傳
   })
   if (ins.code === '23505') return { error: '這個編號與語言已經有文件了，請改用該文件的「覆蓋」', status: 400 }
   const media = ins.data?.[0]
@@ -172,6 +174,7 @@ export async function downloadUrl(id: string, versionId?: string): Promise<{ url
 export interface PublicDoc {
   id: string; slug: string; title: string; kind: string; lang: string; countries: string[]
   current_version_id: string; updated_at: string
+  category?: string | null
 }
 type RawPublic = Omit<PublicDoc, 'current_version_id'> & { current_version_id: string | null }
 const PUBLIC_COLS = 'id,slug,title,kind,lang,countries,current_version_id,updated_at'
@@ -186,7 +189,9 @@ export async function publishedBySlug(slug: string): Promise<PublicDoc[]> {
 /** 所有「已上架、類型為說明書、勾選顯示在保固網站、有目前版本」的文件（國家頁的產品清單由這裡自動產生）。
  *  沒勾「顯示在保固網站」的文件不會出現在清單，但 /m/<編號> 的 QR 連結照常可用（那邊用 publishedBySlug）。 */
 export async function publishedManuals(): Promise<PublicDoc[]> {
-  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&is_published=eq.true&kind=eq.manual&listed=eq.true&scope=eq.global&order=slug.asc`)
+  const q = `is_published=eq.true&kind=eq.manual&listed=eq.true&scope=eq.global&order=slug.asc`
+  let r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS},category&${q}`)
+  if (!r.ok) r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&${q}`)   // 類別欄位（009）還沒建時，退回沒有類別的版本，頁面不壞
   return (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
 }
 
