@@ -9,7 +9,7 @@
 import { NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/adminAuth'
 import {
-  MEDIA_LANGS, isMediaKind, isMediaLang, isUuid, normalizeSlug, type MediaKind,
+  MEDIA_LANGS, isMediaKind, isMediaLang, isMediaScope, isUuid, normalizeSlug, type MediaKind, type MediaScope,
 } from '@/lib/mediaConfig'
 import {
   addVersion, createFile, deleteFile, downloadUrl, listAll, patchFile, restoreVersion, uploadUrl, validateUpload,
@@ -83,7 +83,9 @@ export async function POST(req: Request) {
       if (bad) return fail(bad)
       if (body.listed !== undefined && typeof body.listed !== 'boolean') return fail('「顯示在保固網站」格式不正確')
       const listed = body.listed !== false
-      const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, countries, listed, file: file as UploadedFileInfo }, actor)
+      if (body.scope !== undefined && !isMediaScope(body.scope)) return fail('用途不正確')
+      const scope: MediaScope = body.scope === 'general' ? 'general' : 'global'
+      const r = await createFile({ slug, lang, title, kind: kind as MediaKind, sku: str(body.sku, 64) || null, countries, listed, scope, file: file as UploadedFileInfo }, actor)
       return r.error ? fail(r.error, r.status) : ok(r.data)
     }
 
@@ -121,6 +123,10 @@ export async function POST(req: Request) {
         patch.kind = body.kind
       }
       if (body.sku !== undefined) patch.sku = str(body.sku, 64) || null
+      if (body.scope !== undefined) {
+        if (!isMediaScope(body.scope)) return fail('用途不正確')
+        patch.scope = body.scope
+      }
       if (typeof body.is_published === 'boolean') patch.is_published = body.is_published
       if (body.listed !== undefined) {
         if (typeof body.listed !== 'boolean') return fail('「顯示在保固網站」格式不正確')

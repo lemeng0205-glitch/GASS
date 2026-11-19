@@ -47,7 +47,11 @@ export const isDownloadMime = (mime: string) => mime === 'application/octet-stre
 
 export const MEDIA_KINDS = ['manual', 'image', 'document', 'other', 'template'] as const
 export type MediaKind = (typeof MEDIA_KINDS)[number]
-export const isMediaKind = (k: unknown): k is MediaKind => typeof k === 'string' && (MEDIA_KINDS as readonly string[]).includes(k)
+/** 用途：global = 全球服務中心（依顯示國家出現在保固網站）；general = 一般媒體庫（不進保固網站清單，連結與 QR 仍可用） */
+export const MEDIA_SCOPES = ['global', 'general'] as const
+export type MediaScope = (typeof MEDIA_SCOPES)[number]
+export const isMediaScope = (s: unknown): s is MediaScope => typeof s === 'string' && (MEDIA_SCOPES as readonly string[]).includes(s)
+export const isMediaKind =(k: unknown): k is MediaKind => typeof k === 'string' && (MEDIA_KINDS as readonly string[]).includes(k)
 
 /** 可用的語言（ERP 後台的語言選單向本站取得，只維護這一份）。新增語言只要加在這裡（資料庫不限制語言值）；label 是消費者選擇頁上顯示的名稱 */
 export const MEDIA_LANGS: Array<{ value: string; label: string }> = [
