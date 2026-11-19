@@ -85,6 +85,8 @@ export const COPY = {
   comingSoon: { zh: '即將推出', en: 'Coming soon' },
   manuals:    { zh: '產品說明書', en: 'Product manuals' },
   openManual: { zh: '使用說明書', en: 'Manual' },
+  templates:  { zh: '電子模板', en: 'Digital templates' },
+  download:   { zh: '下載', en: 'Download' },
   backGlobal: { zh: '← 返回首頁', en: '← Back to home' },
   twTitle:    { zh: '台灣售後服務中心', en: 'Taiwan Service Center' },
   twSub:      { zh: '說明書、保固登錄與常用資源都在這裡。', en: 'Manuals, warranty registration and resources.' },

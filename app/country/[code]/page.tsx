@@ -7,6 +7,7 @@ import { COPY, US_LINKS, type L10n } from '@/lib/portalConfig'
 import { INTL, countryName, isCountryPage, type Country } from '@/lib/countries'
 import { getCountries } from '@/lib/countryDb'
 import { catalogFor } from '@/lib/catalog'
+import { templatesFor } from '@/lib/templates'
 import { getLang } from '@/lib/serverLang'
 
 type Props = { params: Promise<{ code: string }> }
@@ -29,5 +30,6 @@ export default async function Page({ params }: Props) {
   if (!isCountryPage(code, list)) notFound()
   const lang = await getLang()
   const groups = await catalogFor(code, lang)
-  return <RegionPage lang={lang} path={`/country/${code}`} title={titleFor(code, list)} sub={COPY.usSub} links={US_LINKS} groups={groups} />
+  const templates = await templatesFor(code)
+  return <RegionPage lang={lang} path={`/country/${code}`} title={titleFor(code, list)} sub={COPY.usSub} links={US_LINKS} groups={groups} templates={templates} />
 }

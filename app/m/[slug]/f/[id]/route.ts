@@ -2,7 +2,7 @@
 // HTML → 從 Storage 取出、補骨架、加 CSP sandbox 後直接回傳；其他類型 → 導向 5 分鐘有效的簽名連結。並累計開啟次數。
 // bucket 是私有的，檔案路徑不會外流；下架或沒有目前版本的文件一律 404。
 import { NextRequest, NextResponse } from 'next/server'
-import { MEDIA_BUCKET } from '@/lib/mediaConfig'
+import { MEDIA_BUCKET, isDownloadMime } from '@/lib/mediaConfig'
 import { incView, publishedFile, versionInfo } from '@/lib/mediaDb'
 import { prepareHtml, HTML_SANDBOX_HEADERS } from '@/lib/mediaHtml'
 import { storageSignedUrl, storageText } from '@/lib/supabaseRest'
@@ -29,7 +29,8 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
     return new NextResponse(prepareHtml(html), { status: 200, headers: HTML_SANDBOX_HEADERS })
   }
 
-  const signed = await storageSignedUrl(MEDIA_BUCKET, ver.file_path, 300)
+  // 電子模板（GoodNotes／Notability／ZIP）瀏覽器打不開，帶原檔名直接下載
+  const signed = await storageSignedUrl(MEDIA_BUCKET, ver.file_path, 300, isDownloadMime(ver.mime_type) ? ver.file_name : undefined)
   if (!signed) return notFound()
   await incView(media.id)
 

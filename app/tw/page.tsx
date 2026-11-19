@@ -4,10 +4,12 @@
 import RegionPage from '@/components/RegionPage'
 import { COPY, TW_LINKS } from '@/lib/portalConfig'
 import { catalogFor } from '@/lib/catalog'
+import { templatesFor } from '@/lib/templates'
 import { getLang } from '@/lib/serverLang'
 
 export default async function Page() {
   const lang = await getLang()
   const groups = await catalogFor('tw', lang)
-  return <RegionPage lang={lang} path="/tw" title={COPY.twTitle} sub={COPY.twSub} links={TW_LINKS} groups={groups} />
+  const templates = await templatesFor('tw')
+  return <RegionPage lang={lang} path="/tw" title={COPY.twTitle} sub={COPY.twSub} links={TW_LINKS} groups={groups} templates={templates} />
 }

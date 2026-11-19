@@ -5,7 +5,7 @@ import {
   rest, storageExists, storageRemove, storageSignedUpload, storageSignedUrl,
 } from './supabaseRest'
 import {
-  ALLOWED_LABEL, ALLOWED_MIME, MAX_VERSIONS, MEDIA_BUCKET, buildFilePath, isPathFor, isSlug, isUuid, sizeError,
+  ALLOWED_LABEL, ALLOWED_MIME, MAX_VERSIONS, MEDIA_BUCKET, buildFilePath, isPathFor, isSlug, isUuid, mimeNameOk, sizeError,
   type MediaKind,
 } from './mediaConfig'
 
@@ -43,6 +43,7 @@ export async function validateUpload(slug: string, lang: string, f: Partial<Uplo
   const tooBig = sizeError(f.mime_type, Number(f.size_bytes ?? 0))
   if (tooBig) return tooBig
   if (f.file_name.length > 255) return '檔名過長'
+  if (!mimeNameOk(f.mime_type, f.file_name)) return '這種檔案只接受 GoodNotes（.goodnotes）、Notability（.nbn／.note）或 ZIP'
   if (!isPathFor(f.file_path, slug, lang)) return '檔案路徑不正確'
   if (!(await storageExists(MEDIA_BUCKET, f.file_path))) return '找不到已上傳的檔案，請重新上傳'
   return null
@@ -178,10 +179,26 @@ export async function publishedFile(slug: string, id: string): Promise<{ id: str
   return m?.current_version_id ? { id: m.id, current_version_id: m.current_version_id } : null
 }
 
-export async function versionInfo(versionId: string): Promise<{ file_path: string; mime_type: string } | null> {
+/** 所有「已上架、類型為電子模板、勾選顯示、有目前版本」的文件，附目前版本的檔名與大小（給國家頁的模板清單） */
+export interface PublicTemplate extends PublicDoc { file_name: string; size_bytes: number }
+export async function publishedTemplates(): Promise<PublicTemplate[]> {
+  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&is_published=eq.true&kind=eq.template&listed=eq.true&order=title.asc`)
+  const docs = (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
+  const ids = docs.map(d => d.current_version_id).filter(isUuid)
+  if (!ids.length) return []
+  const v = await rest<Array<{ id: string; file_name: string; size_bytes: number }>>(
+    `${VERS}?select=id,file_name,size_bytes&id=in.(${ids.join(',')})`)
+  const by = new Map((v.data ?? []).map(x => [x.id, x]))
+  return docs.flatMap(d => {
+    const ver = by.get(d.current_version_id)
+    return ver ? [{ ...d, file_name: ver.file_name, size_bytes: Number(ver.size_bytes) || 0 }] : []
+  })
+}
+
+export async function versionInfo(versionId: string): Promise<{ file_path: string; mime_type: string; file_name: string } | null> {
   if (!isUuid(versionId)) return null
-  const r = await rest<Array<{ file_path: string; mime_type: string }>>(
-    `${VERS}?select=file_path,mime_type&id=eq.${versionId}`)
+  const r = await rest<Array<{ file_path: string; mime_type: string; file_name: string }>>(
+    `${VERS}?select=file_path,mime_type,file_name&id=eq.${versionId}`)
   return r.data?.[0] ?? null
 }
 

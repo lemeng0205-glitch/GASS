@@ -9,11 +9,16 @@ import { COPY, type PortalLang, type QuickLink, type L10n } from '@/lib/portalCo
 import PortalHeader from './PortalHeader'
 import QuickLinks from './QuickLinks'
 import ManualTabs, { type ManualGroup } from './ManualTabs'
+import TemplateList from './TemplateList'
+import type { TemplateItem } from '@/lib/templates'
 
 export default function RegionPage(props: {
-  lang: PortalLang; path: string; title: L10n; sub: L10n; links: QuickLink[]; groups: ManualGroup[]
+  lang: PortalLang; path: string; title: L10n; sub: L10n; links: QuickLink[]; groups: ManualGroup[]; templates?: TemplateItem[]
 }) {
-  const { lang, path, title, sub, links, groups } = props
+  const { lang, path, title, sub, groups } = props
+  const templates = props.templates ?? []
+  // 有上傳電子模板就捲到下方清單；還沒上傳時沿用原本的外部連結
+  const links = templates.length ? props.links.map(l => (l.key === 'templates' ? { ...l, href: '#templates' } : l)) : props.links
   const q = `?lang=${lang}`
   return (
     <>
@@ -36,6 +41,13 @@ export default function RegionPage(props: {
           <h2 className="eyebrow mb-5">{COPY.manuals[lang]}</h2>
           <ManualTabs groups={groups} openLabel={COPY.openManual[lang]} />
         </section>
+
+        {templates.length > 0 && (
+          <section id="templates" className="mt-16 scroll-mt-24">
+            <h2 className="eyebrow mb-5">{COPY.templates[lang]}</h2>
+            <TemplateList items={templates} downloadLabel={COPY.download[lang]} />
+          </section>
+        )}
       </main>
       <footer className="border-t border-[var(--rule)] py-8 text-center text-[11px] tracking-[0.2em] text-[var(--muted)]">
         © {new Date().getFullYear()} LEMENG · eiP

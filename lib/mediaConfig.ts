@@ -27,10 +27,25 @@ export const ALLOWED_MIME: Record<string, string> = {
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
   'text/plain': 'txt',
   'text/html': 'html',
+  // 電子模板（GoodNotes／Notability 等專用格式瀏覽器不認得，一律用 octet-stream；副檔名另外由 TEMPLATE_EXTS 把關）
+  'application/zip': 'zip',
+  'application/octet-stream': 'bin',
 }
-export const ALLOWED_LABEL = 'PDF、圖片（PNG／JPG／WebP／GIF）、Word、Excel、PowerPoint、TXT、HTML'
+export const ALLOWED_LABEL = 'PDF、圖片（PNG／JPG／WebP／GIF）、Word、Excel、PowerPoint、TXT、HTML，電子模板另支援 GoodNotes／Notability／ZIP'
 
-export const MEDIA_KINDS = ['manual', 'image', 'document', 'other'] as const
+/** 電子模板允許的副檔名（mime 為 octet-stream 時，檔名必須是這些之一，避免有人傳可執行檔） */
+export const TEMPLATE_EXTS = ['goodnotes', 'nbn', 'note', 'zip'] as const
+export const fileExt = (name: string) => (name.split('.').pop() ?? '').toLowerCase()
+/** mime 與檔名是否相符：一般類型照舊；octet-stream／zip 必須是模板副檔名 */
+export function mimeNameOk(mime: string, fileName: string): boolean {
+  if (mime === 'application/octet-stream') return (TEMPLATE_EXTS as readonly string[]).includes(fileExt(fileName))
+  if (mime === 'application/zip') return fileExt(fileName) === 'zip'
+  return true
+}
+/** 這種檔案不能在瀏覽器內開啟，公開連結要直接下載 */
+export const isDownloadMime = (mime: string) => mime === 'application/octet-stream' || mime === 'application/zip'
+
+export const MEDIA_KINDS = ['manual', 'image', 'document', 'other', 'template'] as const
 export type MediaKind = (typeof MEDIA_KINDS)[number]
 export const isMediaKind = (k: unknown): k is MediaKind => typeof k === 'string' && (MEDIA_KINDS as readonly string[]).includes(k)
 
