@@ -5,7 +5,7 @@ import { effectiveCountries } from './countries'
 import { publishedTemplates } from './mediaDb'
 import { fileExt } from './mediaConfig'
 
-export interface TemplateItem { id: string; title: string; url: string; ext: string; size: number }
+export interface TemplateItem { id: string; title: string; url: string; ext: string; size: number; cover: string | null }
 
 export async function templatesFor(country: string): Promise<TemplateItem[]> {
   const docs = await publishedTemplates()
@@ -16,6 +16,6 @@ export async function templatesFor(country: string): Promise<TemplateItem[]> {
     })
     .map(d => ({
       id: d.id, title: d.title, url: `/m/${d.slug}/f/${d.id}`,
-      ext: fileExt(d.file_name).toUpperCase(), size: d.size_bytes,
+      ext: fileExt(d.file_name).toUpperCase(), size: d.size_bytes, cover: d.cover_url,
     }))
 }

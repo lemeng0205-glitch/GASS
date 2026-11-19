@@ -19,6 +19,7 @@ export interface MediaFile {
   countries: string[]
   listed: boolean
   scope: MediaScope
+  cover_path: string | null          // 預覽圖（例如 PDF 第一頁），存在同一個 bucket
   created_by: string | null; created_at: string; updated_at: string
 }
 export interface MediaItem extends MediaFile { versions: MediaVersion[] }
@@ -110,10 +111,27 @@ export async function patchFile(id: string, patch: Record<string, unknown>): Pro
   return { data: row }
 }
 
+/** 設定／清除預覽圖。路徑必須屬於該文件（slug／lang）、副檔名是圖片、檔案真的已上傳；舊預覽圖檔會一併刪除 */
+export async function setCover(id: string, path: string | null): Promise<{ error?: string; status?: number }> {
+  const m = await rest<Array<{ slug: string; lang: string; cover_path: string | null }>>(`${FILES}?select=slug,lang,cover_path&id=eq.${id}`)
+  const row = m.data?.[0]
+  if (!m.ok || !row) return { error: '找不到這份文件', status: 404 }
+  if (path !== null) {
+    if (path.length > 300 || !/\.(webp|jpg|png)$/.test(path) || !isPathFor(path, row.slug, row.lang)) return { error: '預覽圖路徑不正確', status: 400 }
+    if (!(await storageExists(MEDIA_BUCKET, path))) return { error: '找不到已上傳的預覽圖，請重新上傳', status: 400 }
+  }
+  const up = await rest(`${FILES}?id=eq.${id}`, { method: 'PATCH', body: { cover_path: path, updated_at: new Date().toISOString() } })
+  if (!up.ok) return { error: '儲存預覽圖失敗，請稍後再試', status: 500 }
+  if (row.cover_path && row.cover_path !== path) await storageRemove(MEDIA_BUCKET, [row.cover_path])
+  return {}
+}
+
 export async function deleteFile(id: string): Promise<boolean> {
   const v = await rest<Array<{ file_path: string }>>(`${VERS}?select=file_path&media_id=eq.${id}`)
   if (!v.ok) return false
-  await storageRemove(MEDIA_BUCKET, (v.data ?? []).map(x => x.file_path))
+  const c = await rest<Array<{ cover_path: string | null }>>(`${FILES}?select=cover_path&id=eq.${id}`)
+  const cover = c.data?.[0]?.cover_path
+  await storageRemove(MEDIA_BUCKET, [...(v.data ?? []).map(x => x.file_path), ...(cover ? [cover] : [])])
   const d = await rest(`${FILES}?id=eq.${id}`, { method: 'DELETE' })   // 版本會連帶刪除
   return d.ok
 }
@@ -181,19 +199,28 @@ export async function publishedFile(slug: string, id: string): Promise<{ id: str
 }
 
 /** 所有「已上架、類型為電子模板、勾選顯示、有目前版本」的文件，附目前版本的檔名與大小（給國家頁的模板清單） */
-export interface PublicTemplate extends PublicDoc { file_name: string; size_bytes: number }
+export interface PublicTemplate extends PublicDoc { file_name: string; size_bytes: number; cover_url: string | null }
 export async function publishedTemplates(): Promise<PublicTemplate[]> {
-  const r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&is_published=eq.true&kind=eq.template&listed=eq.true&scope=eq.global&order=title.asc`)
-  const docs = (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
+  type Row = RawPublic & { cover_path?: string | null }
+  const q = `is_published=eq.true&kind=eq.template&listed=eq.true&scope=eq.global&order=title.asc`
+  let r = await rest<Row[]>(`${FILES}?select=${PUBLIC_COLS},cover_path&${q}`)
+  if (!r.ok) r = await rest<Row[]>(`${FILES}?select=${PUBLIC_COLS}&${q}`)   // 預覽圖欄位（008）還沒建時，退回沒有預覽圖的版本，頁面不壞
+  const docs = (r.data ?? []).filter((d): d is Row & { current_version_id: string } => !!d.current_version_id)
   const ids = docs.map(d => d.current_version_id).filter(isUuid)
   if (!ids.length) return []
   const v = await rest<Array<{ id: string; file_name: string; size_bytes: number }>>(
     `${VERS}?select=id,file_name,size_bytes&id=in.(${ids.join(',')})`)
   const by = new Map((v.data ?? []).map(x => [x.id, x]))
-  return docs.flatMap(d => {
+  const out: PublicTemplate[] = []
+  for (const d of docs) {
     const ver = by.get(d.current_version_id)
-    return ver ? [{ ...d, file_name: ver.file_name, size_bytes: Number(ver.size_bytes) || 0 }] : []
-  })
+    if (!ver) continue
+    // 預覽圖：1 小時有效的簽名連結（bucket 是私有的）
+    const cover_url = d.cover_path ? await storageSignedUrl(MEDIA_BUCKET, d.cover_path, 3600) : null
+    const { cover_path: _c, ...rest0 } = d
+    out.push({ ...rest0, current_version_id: d.current_version_id, file_name: ver.file_name, size_bytes: Number(ver.size_bytes) || 0, cover_url })
+  }
+  return out
 }
 
 export async function versionInfo(versionId: string): Promise<{ file_path: string; mime_type: string; file_name: string } | null> {

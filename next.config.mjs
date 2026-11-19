@@ -1,10 +1,15 @@
+// v0.3.0 | 2026-11-19 | img-src 放行本站 Supabase 來源（電子模板預覽圖）
 // v0.2.0 | 2026-11-18 | /m/<編號>/f/<id>（說明書檔案）不疊本站 CSP，由該路由自己加隔離標頭
 // v0.1.0 | 2026-11-04 | 安全標頭（僅正式環境；開發模式 Next 需要 eval）
 const isProd = process.env.NODE_ENV === 'production'
 
+// 電子模板預覽圖用本站資料庫的簽名連結顯示 → 只放行這一個來源（不用萬用字元）
+let supabaseOrigin = ''
+try { supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : '' } catch {}
+
 const csp = [
   "default-src 'self'",
-  "img-src 'self' data:",
+  `img-src 'self' data:${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self'",

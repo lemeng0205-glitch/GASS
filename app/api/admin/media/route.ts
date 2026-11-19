@@ -12,7 +12,7 @@ import {
   MEDIA_LANGS, isMediaKind, isMediaLang, isMediaScope, isUuid, normalizeSlug, type MediaKind, type MediaScope,
 } from '@/lib/mediaConfig'
 import {
-  addVersion, createFile, deleteFile, downloadUrl, listAll, patchFile, restoreVersion, uploadUrl, validateUpload,
+  addVersion, createFile, deleteFile, downloadUrl, listAll, patchFile, restoreVersion, setCover, uploadUrl, validateUpload,
   type UploadedFileInfo,
 } from '@/lib/mediaDb'
 import { rest } from '@/lib/supabaseRest'
@@ -136,6 +136,12 @@ export async function POST(req: Request) {
         const c = normalizeCountries(body.countries, allowedCodes(await getAllCountries()))
         if (!c) return fail('顯示國家不正確（至少選一個）')
         patch.countries = c
+      }
+      // 預覽圖：字串＝設定（路徑必須屬於這份文件且檔案已上傳）、null＝清除
+      if (body.cover_path !== undefined) {
+        if (body.cover_path !== null && typeof body.cover_path !== 'string') return fail('預覽圖不正確')
+        const c = await setCover(id, body.cover_path as string | null)
+        if (c.error) return fail(c.error, c.status)
       }
       // 搬遷用：帶入原本累計的開啟次數（整數 0～10 億）
       if (body.view_count !== undefined) {
