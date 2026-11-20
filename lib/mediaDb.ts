@@ -175,6 +175,7 @@ export interface PublicDoc {
   id: string; slug: string; title: string; kind: string; lang: string; countries: string[]
   current_version_id: string; updated_at: string
   category?: string | null
+  cover_path?: string | null     // 主圖（專員在 ERP 上傳；說明書卡片用）
 }
 type RawPublic = Omit<PublicDoc, 'current_version_id'> & { current_version_id: string | null }
 const PUBLIC_COLS = 'id,slug,title,kind,lang,countries,current_version_id,updated_at'
@@ -190,7 +191,8 @@ export async function publishedBySlug(slug: string): Promise<PublicDoc[]> {
  *  沒勾「顯示在保固網站」的文件不會出現在清單，但 /m/<編號> 的 QR 連結照常可用（那邊用 publishedBySlug）。 */
 export async function publishedManuals(): Promise<PublicDoc[]> {
   const q = `is_published=eq.true&kind=eq.manual&listed=eq.true&scope=eq.global&order=slug.asc`
-  let r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS},category&${q}`)
+  let r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS},category,cover_path&${q}`)
+  if (!r.ok) r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS},category&${q}`)
   if (!r.ok) r = await rest<RawPublic[]>(`${FILES}?select=${PUBLIC_COLS}&${q}`)   // 類別欄位（009）還沒建時，退回沒有類別的版本，頁面不壞
   return (r.data ?? []).filter((d): d is PublicDoc => !!d.current_version_id)
 }
@@ -202,6 +204,9 @@ export async function publishedFile(slug: string, id: string): Promise<{ id: str
   const m = r.data?.[0]
   return m?.current_version_id ? { id: m.id, current_version_id: m.current_version_id } : null
 }
+
+/** 主圖的簽名連結（bucket 是私有的，1 小時有效） */
+export const coverUrl = (path: string) => storageSignedUrl(MEDIA_BUCKET, path, 3600)
 
 /** 所有「已上架、類型為電子模板、勾選顯示、有目前版本」的文件，附目前版本的檔名與大小（給國家頁的模板清單） */
 export interface PublicTemplate extends PublicDoc { file_name: string; size_bytes: number; cover_url: string | null }

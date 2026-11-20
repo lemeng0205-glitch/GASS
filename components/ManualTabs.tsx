@@ -1,3 +1,4 @@
+// v0.4.0 | 2026-11-20 | 卡片主圖：優先用專員上傳的圖片（p.image）
 // v0.3.0 | 2026-11-19 | 每張說明書卡片都顯示語言標籤（多語言可點選、單一語言為純標示）
 'use client'
 // v0.2.0 | 2026-11-18 | 同一產品有多種語言時，卡片下方顯示語言小按鈕（例：加拿大的 English／Français）
@@ -5,7 +6,7 @@
 import { useState } from 'react'
 
 export interface ManualAlt { label: string; url: string }
-export interface ManualItem { slug: string; name: string; url: string; noImage?: boolean; alts?: ManualAlt[] }
+export interface ManualItem { slug: string; name: string; url: string; noImage?: boolean; image?: string; alts?: ManualAlt[] }
 export interface ManualGroup { key: string; label: string; items: ManualItem[] }
 
 export default function ManualTabs({ groups, openLabel }: { groups: ManualGroup[]; openLabel: string }) {
@@ -38,7 +39,11 @@ export default function ManualTabs({ groups, openLabel }: { groups: ManualGroup[
         {current.items.map(p => (
           <li key={p.slug} className="glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
             <a href={p.url} target="_blank" rel="noopener noreferrer" className="group flex flex-1 flex-col">
-              {p.noImage ? (
+              {p.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.image} alt="" loading="lazy"
+                     className="plinth aspect-square w-full object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]" />
+              ) : p.noImage ? (
                 <div aria-hidden className="plinth flex aspect-square w-full items-center justify-center text-[22px] font-light tracking-[0.3em] text-[var(--muted)]">eiP</div>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
