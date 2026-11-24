@@ -1,17 +1,31 @@
 <!doctype html>
+<!-- v0.5.0 | 2026-11-24 | 加網站圖示／標題／分享預覽、頁首 eiP logo（回全球服務中心）、完成畫面的「回服務中心」「看說明書」按鈕 -->
 <!-- v0.4.0 | 2026-11-23 | 海外版保固登錄頁。樣式在 warranty.css、程式與設定在 warranty.js（頁面本身沒有任何行內樣式或程式，可在嚴格 CSP 下運作）；資料存 Google 試算表 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Warranty Registration</title>
+<title>Warranty Registration | eiP Global Service Center</title>
+<meta name="description" content="Register your eiP product to activate warranty support. It takes about one minute.">
+<meta name="theme-color" content="#f3f2ef">
+<meta property="og:title" content="Warranty Registration | eiP Global Service Center">
+<meta property="og:description" content="Register your eiP product to activate warranty support.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/icon.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="/apple-icon.png">
 <link rel="stylesheet" href="warranty.css">
 </head>
 <body>
 <div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
 <canvas id="confetti" aria-hidden="true" hidden></canvas>
+<header class="site">
+  <a class="brand" href="/country/intl" aria-label="eiP Global Service Center – back to home">
+    <img src="/portal/logo.png" alt="eiP" width="450" height="249">
+    <span>Global Service Center</span>
+  </a>
+</header>
 <main>
-  <p class="eyebrow rise" data-i="0">Global Service Center</p>
   <h1 class="rise" data-i="1">Warranty Registration</h1>
   <p class="lead rise" data-i="2">Register your product to activate warranty support. It takes about one minute.</p>
 
@@ -101,6 +115,10 @@
     <p id="doneText"></p>
     <div id="regno" class="regno" hidden></div>
     <dl id="summary"></dl>
+    <div class="actions">
+      <a class="btn primary" href="/country/intl">Back to Global Service Center</a>
+      <a class="btn" href="/country/intl">View product manuals</a>
+    </div>
   </section>
 </main>
 
