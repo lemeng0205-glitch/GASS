@@ -1,4 +1,5 @@
 // ================================================
+// v0.6.0 | 2026-11-24 | 海外「保固登錄」改連本站 /warranty（海外業務交接包的登錄頁）
 // v0.5.0 | 2026-11-19 | 國家清單改存資料庫；manualUrl 由呼叫端傳入語言順序；REGIONS 變成備用／初始資料
 // v0.4.0 | 2026-11-18 | 各國頁面 /country/<代碼>；說明書連結帶 country 與語言偏好（COUNTRY_LANGS）
 // v0.3.0 | 2026-11-18 | 說明書連結改指本站自己的 /m/（媒體庫已搬到本站資料庫），不再經過 ERP 網址
@@ -99,7 +100,7 @@ export const COPY = {
 export interface QuickLink { key: string; label: L10n; desc: L10n; href: string }
 
 export const WARRANTY_TW = 'https://eipstore.online/2025%e4%bf%9d%e5%9b%ba%e9%a0%81/'
-export const WARRANTY_GLOBAL = 'https://eipstore.online/warranty_registration_global'
+export const WARRANTY_GLOBAL = '/warranty'   // 本站頁面（public/warranty/）；舊 WordPress 頁：https://eipstore.online/warranty_registration_global
 
 export const TW_LINKS: QuickLink[] = [
   { key: 'warranty',  label: { zh: '保固登錄', en: 'Warranty registration' },

@@ -1,0 +1,109 @@
+<!doctype html>
+<!-- v0.4.0 | 2026-11-23 | 海外版保固登錄頁。樣式在 warranty.css、程式與設定在 warranty.js（頁面本身沒有任何行內樣式或程式，可在嚴格 CSP 下運作）；資料存 Google 試算表 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warranty Registration</title>
+<link rel="stylesheet" href="warranty.css">
+</head>
+<body>
+<div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
+<canvas id="confetti" aria-hidden="true" hidden></canvas>
+<main>
+  <p class="eyebrow rise" data-i="0">Global Service Center</p>
+  <h1 class="rise" data-i="1">Warranty Registration</h1>
+  <p class="lead rise" data-i="2">Register your product to activate warranty support. It takes about one minute.</p>
+
+  <div id="demoBanner" class="banner demo" hidden>
+    Preview mode: nothing you enter on this page is saved or sent.
+  </div>
+
+  <form id="form" class="glass rise" data-i="3" novalidate>
+    <div class="progress" aria-hidden="true"><b id="bar"></b></div>
+    <div id="formError" class="banner error" role="alert" hidden></div>
+
+    <div class="field" data-field="name">
+      <label for="name">Full name</label>
+      <input id="name" name="name" type="text" autocomplete="name" maxlength="100" required>
+      <div class="err">Please enter your name.</div>
+    </div>
+
+    <div class="field" data-field="email">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="200" required>
+      <div class="hint">We use this to find your registration if you need support.</div>
+      <div class="err">Please enter a valid email address.</div>
+    </div>
+
+    <div class="field" data-field="country">
+      <label for="country">Country / Region</label>
+      <select id="country" name="country" autocomplete="country-name" required>
+        <option value="">Select…</option>
+      </select>
+      <div class="err">Please select your country or region.</div>
+    </div>
+
+    <div class="field" data-field="product">
+      <label for="product">Product</label>
+      <select id="product" name="product" required>
+        <option value="">Select…</option>
+      </select>
+      <div class="err">Please select your product.</div>
+    </div>
+
+    <div class="field" data-field="channel">
+      <label for="channel">Where did you buy it?</label>
+      <select id="channel" name="channel" required>
+        <option value="">Select…</option>
+      </select>
+      <div class="err">Please select where you bought it.</div>
+    </div>
+
+    <div class="field" data-field="order_no">
+      <label for="order_no">Order number</label>
+      <input id="order_no" name="order_no" type="text" maxlength="60" autocapitalize="characters" required>
+      <div class="hint">You can find it in your order confirmation email or receipt.</div>
+      <div class="err">Please enter your order number.</div>
+    </div>
+
+    <div class="field" data-field="purchase_date">
+      <label for="purchase_date">Purchase date</label>
+      <input id="purchase_date" name="purchase_date" type="date" required>
+      <div class="err">Please enter a purchase date that is not in the future.</div>
+    </div>
+
+    <div class="field" data-field="serial_no">
+      <label for="serial_no">Serial number <span class="opt">(optional)</span></label>
+      <input id="serial_no" name="serial_no" type="text" maxlength="60" autocapitalize="characters">
+    </div>
+
+    <!-- 隱藏欄位（防機器人）：真人看不到、不會填；有值就不送出 -->
+    <div class="hp" aria-hidden="true">
+      <label for="website">Leave this field empty</label>
+      <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+    </div>
+
+    <div class="field" data-field="consent">
+      <div class="consent">
+        <input id="consent" name="consent" type="checkbox" required>
+        <label for="consent">I agree that my information may be used to provide warranty and after-sales support, as described in the <a id="privacyLink" href="#" target="_blank" rel="noopener">Privacy Policy</a>.</label>
+      </div>
+      <div class="err">Please tick the box to continue.</div>
+    </div>
+
+    <button id="submit" type="submit">Register warranty</button>
+  </form>
+
+  <section id="done" class="glass done" hidden tabindex="-1">
+    <svg class="check" viewBox="0 0 68 68" aria-hidden="true"><circle cx="34" cy="34" r="30"/><path d="M21 35.5l9 9 17-19"/></svg>
+    <h2 id="doneTitle">Registration received</h2>
+    <p id="doneText"></p>
+    <div id="regno" class="regno" hidden></div>
+    <dl id="summary"></dl>
+  </section>
+</main>
+
+<script src="warranty.js"></script>
+</body>
+</html>
