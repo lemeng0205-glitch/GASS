@@ -1,0 +1,54 @@
+# v1.0.0 | 2026-11-26 | AI 工作總部 → Claude Code：Issue 裡有 @claude 就在 claude/issue-N 分支實作，完成後自動開 Pull Request（不會合併、不會推 main）
+# 放到每個專案的 .github/workflows/claude.yml
+# 需要：repo secret ANTHROPIC_API_KEY；安裝 Claude GitHub App（https://github.com/apps/claude）；
+#      Settings → Actions → General → 勾選「Allow GitHub Actions to create and approve pull requests」
+name: Claude Code
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  claude:
+    if: >-
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
+      (github.event_name != 'issues' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # Claude pushes its work to claude/issue-N but does not open the PR itself: open it here so the chairman only has to review & merge
+      - name: Open pull request for the issue branch
+        if: github.event_name == 'issues' || (github.event_name == 'issue_comment' && !github.event.issue.pull_request)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          N: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --quiet || true
+          BR=$(git for-each-ref --sort=-committerdate --format='%(refname:lstrip=3)' "refs/remotes/origin/claude/issue-${N}*" | grep -E "^claude/issue-${N}([^0-9]|$)" | head -1)
+          if [ -z "$BR" ]; then echo "沒有找到 claude/issue-${N} 分支（可能 Claude 只回覆了問題）"; exit 0; fi
+          if [ "$(gh pr list --head "$BR" --state all --json number --jq length)" != "0" ]; then echo "PR 已存在"; exit 0; fi
+          if [ -z "$(git log --oneline "origin/${BASE}..origin/${BR}")" ]; then echo "分支沒有新的修改"; exit 0; fi
+          gh pr create --head "$BR" --base "$BASE" --title "[Claude] ${TITLE}" \
+            --body "Closes #${N}
+
+          由 AI 工作總部交辦、Claude Code 實作。請董事長檢查改動與 Vercel 預覽網址，確認沒問題再按 Merge。"
