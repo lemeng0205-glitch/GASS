@@ -1,0 +1,118 @@
+/* v0.1.0 | 2026-11-25 | 全球保固頁（海外）樣式：移植自業務畫面參考 warranty.css，全部限定在 .wty 底下，不影響其他頁 */
+.wty{--link:#6b5f4b;--error:#a23b31;--error-bg:#f8e9e6;--ok:#4f6b55;position:relative;isolation:isolate}
+
+/* 特效 1：背景緩慢飄動的柔光 */
+.wty-aura{position:fixed;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.wty-aura i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.75;will-change:transform}
+.wty-aura i:nth-child(1){width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:#dccfb6;animation:wty-drift1 26s ease-in-out infinite alternate}
+.wty-aura i:nth-child(2){width:38vmax;height:38vmax;right:-12vmax;top:22vh;background:#ead6d0;animation:wty-drift2 32s ease-in-out infinite alternate}
+.wty-aura i:nth-child(3){width:42vmax;height:42vmax;left:18vw;bottom:-22vmax;background:#d3dccf;animation:wty-drift3 29s ease-in-out infinite alternate}
+@keyframes wty-drift1{to{transform:translate(14vmax,10vmax) scale(1.15)}}
+@keyframes wty-drift2{to{transform:translate(-16vmax,-8vmax) scale(.9)}}
+@keyframes wty-drift3{to{transform:translate(8vmax,-14vmax) scale(1.1)}}
+
+.wty-main{max-width:560px;margin:0 auto;padding:28px 16px 64px}
+.wty-main.wide{max-width:760px}
+.wty .w-eyebrow{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin:4px 0 6px}
+.wty h1{font-size:1.75rem;line-height:1.2;margin:0 0 6px;font-weight:650}
+.wty .lead{color:var(--soft);margin:0 0 20px}
+.wty a{color:var(--link)}
+.wty .back{display:inline-block;margin:0 0 18px;font-size:.875rem;color:var(--soft);text-decoration:none}
+.wty .back:hover{color:var(--accent)}
+
+/* 玻璃卡片 */
+.wty .wg{position:relative;overflow:hidden;border-radius:16px;padding:22px 20px 20px;background:rgba(255,255,255,.62);
+  -webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
+  border:1px solid rgba(255,255,255,.75);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 18px 40px -22px rgba(69,66,62,.35)}
+/* 特效 2：卡片上跟著游標的柔光 */
+.wty .wg::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(140,127,104,.16),transparent 62%)}
+.wty .wg:hover::before{opacity:1}
+.wty .wg>*{position:relative}
+
+/* 入口卡片 */
+.wty .cards{display:grid;gap:14px}
+@media (min-width:640px){.wty .cards{grid-template-columns:1fr 1fr}}
+.wty a.card{display:block;text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
+.wty a.card:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 44px -22px rgba(69,66,62,.45)}
+.wty .card .num{font-size:.75rem;letter-spacing:.14em;color:var(--accent)}
+.wty .card h2{font-size:1.2rem;margin:8px 0 6px;font-weight:650}
+.wty .card p{margin:0;color:var(--soft)}
+.wty .card .go{display:inline-block;margin-top:14px;font-weight:600;color:var(--link)}
+
+/* 特效 3：填寫進度線 */
+.wty .progress{position:absolute!important;left:0;top:0;height:3px;width:100%}
+.wty .progress b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--muted),var(--accent));border-radius:0 3px 3px 0;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+/* 特效 4：依序浮現 */
+.wty .rise{opacity:0;transform:translateY(14px);animation:wty-rise .6s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0) * 55ms + 80ms)}
+@keyframes wty-rise{to{opacity:1;transform:none}}
+
+.wty .field{margin-bottom:16px}
+.wty label{display:block;font-weight:600;margin-bottom:6px}
+.wty .opt{font-weight:400;color:var(--soft)}
+.wty .hint{font-size:.875rem;color:var(--soft);margin-top:4px}
+.wty input[type=text],.wty input[type=email],.wty input[type=date],.wty input[type=tel],.wty select,.wty textarea{
+  width:100%;min-height:46px;padding:10px 12px;font:inherit;color:inherit;background:rgba(255,255,255,.78);
+  border:1px solid var(--rule);border-radius:10px;transition:border-color .2s,box-shadow .2s,background .2s}
+.wty textarea{min-height:140px;resize:vertical}
+.wty input:focus,.wty select:focus,.wty textarea:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(140,127,104,.22)}
+.wty .invalid input,.wty .invalid select,.wty .invalid textarea{border-color:var(--error)}
+.wty .err{display:none;color:var(--error);font-size:.875rem;margin-top:4px}
+.wty .invalid .err{display:block}
+.wty .invalid{animation:wty-nudge .3s}
+@keyframes wty-nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.wty .consent{display:flex;gap:10px;align-items:flex-start}
+.wty .consent input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--accent)}
+.wty .consent label{font-weight:400;margin:0}
+
+/* 特效 5：按鈕光澤 */
+.wty .wbtn{position:relative;overflow:hidden;display:block;width:100%;min-height:50px;font:inherit;font-weight:600;cursor:pointer;text-align:center;
+  color:var(--accent-ink);background:var(--ink);border:0;border-radius:12px;letter-spacing:.02em;text-decoration:none;padding:13px 16px;
+  transition:transform .15s,box-shadow .2s;box-shadow:0 10px 22px -14px rgba(69,66,62,.8)}
+.wty .wbtn::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;transform:skewX(-20deg);
+  background:linear-gradient(90deg,transparent,rgba(251,248,242,.28),transparent)}
+.wty .wbtn:hover::after{animation:wty-sheen .9s}
+@keyframes wty-sheen{to{left:130%}}
+.wty .wbtn:active{transform:scale(.985)}
+.wty .wbtn[disabled]{opacity:.7;cursor:default}
+.wty .wbtn[disabled]::after{animation:wty-sheen 1.1s infinite}
+.wty .wbtn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink);box-shadow:none}
+.wty .actions{display:grid;gap:10px;margin-top:20px}
+@media (min-width:520px){.wty .actions{grid-template-columns:1fr 1fr}}
+
+.wty .banner{border-radius:10px;padding:12px 14px;margin-bottom:16px}
+.wty .banner.error{background:var(--error-bg);color:var(--error)}
+
+/* 特效 6：完成畫面——打勾描繪、編號逐格翻出、彩紙 */
+.wty .done{text-align:center;padding-top:28px}
+.wty .done h2{margin:10px 0 8px;font-size:1.35rem;font-weight:650}
+.wty .check{width:68px;height:68px;display:inline-block}
+.wty .check circle{fill:none;stroke:var(--ok);stroke-width:3;stroke-dasharray:190;stroke-dashoffset:190;animation:wty-draw .7s .1s ease-out forwards}
+.wty .check path{fill:none;stroke:var(--ok);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:48;stroke-dashoffset:48;animation:wty-draw .4s .7s ease-out forwards}
+@keyframes wty-draw{to{stroke-dashoffset:0}}
+.wty .regno{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:10px 0 14px;perspective:600px}
+.wty .regno span{display:inline-block;min-width:1.5ch;padding:9px 5px;border-radius:8px;text-align:center;background:var(--ink);color:var(--accent-ink);
+  font:700 1.25rem/1.1 ui-monospace,Consolas,Menlo,monospace;opacity:0;transform:rotateX(-90deg);transform-origin:50% 0;
+  animation:wty-flip .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i) * 70ms + 900ms)}
+@keyframes wty-flip{to{opacity:1;transform:none}}
+.wty dl{text-align:left;margin:16px 0 0;border-top:1px solid var(--rule)}
+.wty dl div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.wty dt{color:var(--soft)}
+.wty dd{margin:0;text-align:right;overflow-wrap:anywhere}
+.wty-confetti{position:fixed;inset:0;width:100%;height:100%;z-index:50;pointer-events:none}
+.wty .hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* 隱私政策頁 */
+.wty .policy h2{font-size:1.1rem;margin:24px 0 8px;font-weight:650}
+.wty .policy p,.wty .policy li{line-height:1.65}
+.wty .policy table{width:100%;border-collapse:collapse;margin:8px 0}
+.wty .policy th,.wty .policy td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--rule)}
+.wty .policy ul{padding-left:20px;list-style:disc}
+
+/* 減少動態效果：全部關閉 */
+@media (prefers-reduced-motion:reduce){
+  .wty *,.wty *::before,.wty *::after,.wty-aura i{animation:none!important;transition:none!important}
+  .wty .rise,.wty .regno span{opacity:1;transform:none}
+  .wty .check circle,.wty .check path{stroke-dashoffset:0}
+}
