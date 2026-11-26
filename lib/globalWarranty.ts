@@ -1,8 +1,9 @@
+// v0.2.0 | 2026-11-26 | 產品清單改由呼叫端傳入（讀 warranty_products，業務在 ERP 維護）
 // v0.1.0 | 2026-11-25 | 全球保固頁（海外）：欄位驗證、防濫用、寫入 warranty_registrations／warranty_claims、寄信
 // 只能在伺服器端使用。依《全球保固頁_規格》第 3、4、7 節與《寄信規格》。
 import 'server-only'
 import { rest } from './supabaseRest'
-import { GW_CHANNELS, GW_COUNTRIES, GW_PRODUCTS } from './globalWarrantyLists'
+import { GW_CHANNELS, GW_COUNTRIES } from './globalWarrantyLists'
 import { sendWarrantyMail, warrantyMailIdentity } from './warrantyMail'
 import { buildClaimReceivedEmail, buildClaimStaffNotifyEmail, buildRegistrationConfirmEmail } from './warrantyEmailTemplates'
 
@@ -15,7 +16,6 @@ const within = (s: string, min: number, max: number) => s.length >= min && s.len
 const EMAIL_RE = /^[^\s@,;<>"'()]+@[^\s@,;<>"'()]+\.[^\s@,;<>"'()]{2,}$/
 const okEmail = (s: string) => within(s, 3, 254) && EMAIL_RE.test(s)
 const COUNTRY_CODES = new Set(GW_COUNTRIES.map(c => c.code))
-const PRODUCT_NAMES = new Set(GW_PRODUCTS.map(p => p.name))
 const optional = (s: string, min: number, max: number): string | null | false => (s ? (within(s, min, max) ? s : false) : null)
 
 export interface RegistrationInput {
@@ -23,7 +23,8 @@ export interface RegistrationInput {
   orderNo: string; purchaseDate: string; serialNo: string | null
 }
 
-export function parseRegistration(raw: unknown): RegistrationInput | null {
+/** products = 目前販售中的產品名稱（來自 warranty_products） */
+export function parseRegistration(raw: unknown, products: Set<string>): RegistrationInput | null {
   if (typeof raw !== 'object' || raw === null) return null
   const r = raw as Record<string, unknown>
   if (r.consent !== true) return null
@@ -35,7 +36,7 @@ export function parseRegistration(raw: unknown): RegistrationInput | null {
   const serialNo = optional(oneLine(r.serialNo), 1, 60)
   if (serialNo === false) return null
   if (!within(v.name, 1, 80) || !okEmail(v.email) || !COUNTRY_CODES.has(v.country)) return null
-  if (!PRODUCT_NAMES.has(v.product) || !GW_CHANNELS.includes(v.channel) || !within(v.orderNo, 1, 64)) return null
+  if (!products.has(v.product) || !GW_CHANNELS.includes(v.channel) || !within(v.orderNo, 1, 64)) return null
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v.purchaseDate)) return null
   const d = new Date(`${v.purchaseDate}T00:00:00Z`)
   // 不早於 2000-01-01；不晚於今天（容許時區差一天）
@@ -49,7 +50,7 @@ export interface ClaimInput {
   serialNo: string | null; phone: string | null; regNo: string | null
 }
 
-export function parseClaim(raw: unknown): ClaimInput | null {
+export function parseClaim(raw: unknown, products: Set<string>): ClaimInput | null {
   if (typeof raw !== 'object' || raw === null) return null
   const r = raw as Record<string, unknown>
   if (r.consent !== true) return null
@@ -62,7 +63,7 @@ export function parseClaim(raw: unknown): ClaimInput | null {
   const regRaw = oneLine(r.regNo).toUpperCase()
   if (serialNo === false || phone === false) return null
   if (!within(v.name, 1, 80) || !okEmail(v.email) || !COUNTRY_CODES.has(v.country)) return null
-  if (!PRODUCT_NAMES.has(v.product) || !within(v.description, 1, 4000)) return null
+  if (!products.has(v.product) || !within(v.description, 1, 4000)) return null
   // 登錄編號格式不對就當沒填（不回錯誤，避免被拿來試探）
   const regNo = /^EW[0-9A-Z]{8}$/.test(regRaw) ? regRaw : null
   return { ...v, serialNo, phone, regNo }

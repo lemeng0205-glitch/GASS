@@ -1,9 +1,10 @@
+// v0.2.0 | 2026-11-26 | 產品選單改由頁面傳入（資料庫 warranty_products）
 'use client'
 // v0.1.0 | 2026-11-25 | 全球保固頁（海外）表單：保固登錄、諮詢維修。特效移植自業務畫面參考（依序浮現、游標柔光、進度線、按鈕光澤、打勾＋編號翻出＋彩紙）
 // 送出到本站 API（/api/warranty/global/*），瀏覽器不接觸資料庫。失敗時保留已填內容。
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { GW_CHANNELS, GW_COUNTRIES, GW_PRODUCTS } from '@/lib/globalWarrantyLists'
+import { GW_CHANNELS, GW_COUNTRIES } from '@/lib/globalWarrantyLists'
 
 type Kind = 'text' | 'email' | 'date' | 'tel' | 'select' | 'textarea'
 interface Field {
@@ -16,14 +17,14 @@ const PREFILL_KEY = 'eip-gw-prefill'
 const localToday = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10) }
 const EMAIL_RE = /^[^\s@,;<>"'()]+@[^\s@,;<>"'()]+\.[^\s@,;<>"'()]{2,}$/
 const COUNTRY_OPTS = GW_COUNTRIES.map(c => ({ value: c.code, label: c.name }))
-const PRODUCT_OPTS = GW_PRODUCTS.map(p => ({ value: p.name, label: p.name, group: p.category }))
 const CHANNEL_OPTS = GW_CHANNELS.map(c => ({ value: c, label: c }))
 
 const NAME: Field = { name: 'name', label: 'Full name', kind: 'text', required: true, max: 80, autoComplete: 'name', err: 'Please enter your name.' }
 const EMAIL: Field = { name: 'email', label: 'Email', kind: 'email', required: true, max: 254, autoComplete: 'email',
   hint: 'We use this to find your registration if you need support.', err: 'Please enter a valid email address.', check: v => EMAIL_RE.test(v.trim()) }
 const COUNTRY: Field = { name: 'country', label: 'Country / Region', kind: 'select', required: true, max: 2, options: COUNTRY_OPTS, err: 'Please select your country or region.' }
-const PRODUCT: Field = { name: 'product', label: 'Product', kind: 'select', required: true, max: 120, options: PRODUCT_OPTS, err: 'Please select your product.' }
+// 產品選單由頁面（伺服器端讀 warranty_products）傳入，見 GlobalForm 的 products
+const PRODUCT: Field = { name: 'product', label: 'Product', kind: 'select', required: true, max: 120, options: [], err: 'Please select your product.' }
 const SERIAL: Field = { name: 'serialNo', label: 'Serial number', kind: 'text', required: false, max: 60 }
 
 const REG_FIELDS: Field[] = [
@@ -64,8 +65,12 @@ const CONF = {
   claim: { fields: CLAIM_FIELDS, api: '/api/warranty/global/claim', submit: 'Send request', doneTitle: 'We have received your request', codeLabel: 'Request number' },
 }
 
-export default function GlobalForm({ mode }: { mode: Mode }) {
-  const conf = CONF[mode]
+export default function GlobalForm({ mode, products }: { mode: Mode; products: { category: string; name: string }[] }) {
+  const base = CONF[mode]
+  const conf = useMemo(() => ({
+    ...base,
+    fields: base.fields.map(f => (f.name === 'product' ? { ...f, options: products.map(p => ({ value: p.name, label: p.name, group: p.category })) } : f)),
+  }), [base, products])
   const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(conf.fields.map(f => [f.name, ''])))
   const [consent, setConsent] = useState(false)
   const [bad, setBad] = useState<Set<string>>(new Set())

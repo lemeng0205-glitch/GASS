@@ -1,3 +1,4 @@
+// v0.2.0 | 2026-11-26 | 新增 verifyWarrantyAdmin：保固資料管理 API 用另一組憑證（PORTAL_WARRANTY_SECRET），媒體庫憑證外洩也讀不到客人資料
 // v0.1.0 | 2026-11-18 | 管理 API 的請求驗證：HMAC-SHA256 簽章 + 時間戳
 // 呼叫端（ERP 伺服器）用共用憑證對「時間戳 + 請求內容」簽章；本站驗證通過才處理。
 //   - 憑證放在環境變數 PORTAL_ADMIN_SECRET；換憑證時可把舊的放進 PORTAL_ADMIN_SECRET_PREV 並存一段時間
@@ -10,8 +11,16 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 const WINDOW_SEC = 120
 
 export function verifyAdmin(headers: Headers, rawBody: string): boolean {
-  const secrets = [process.env.PORTAL_ADMIN_SECRET, process.env.PORTAL_ADMIN_SECRET_PREV]
-    .filter((s): s is string => !!s && s.length >= 32)
+  return verifyWith([process.env.PORTAL_ADMIN_SECRET, process.env.PORTAL_ADMIN_SECRET_PREV], headers, rawBody)
+}
+
+/** 保固登錄／申請資料與海外產品清單的管理 API：憑證 PORTAL_WARRANTY_SECRET（換憑證時舊的放 PORTAL_WARRANTY_SECRET_PREV） */
+export function verifyWarrantyAdmin(headers: Headers, rawBody: string): boolean {
+  return verifyWith([process.env.PORTAL_WARRANTY_SECRET, process.env.PORTAL_WARRANTY_SECRET_PREV], headers, rawBody)
+}
+
+function verifyWith(candidates: Array<string | undefined>, headers: Headers, rawBody: string): boolean {
+  const secrets = candidates.filter((s): s is string => !!s && s.length >= 32)
   if (!secrets.length) return false
 
   const ts = headers.get('x-admin-ts') ?? ''
