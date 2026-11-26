@@ -1,3 +1,4 @@
+// v0.7.0 | 2026-11-26 | 修改類操作後清除公開頁面快取（revalidateTag）
 // v0.6.0 | 2026-11-19 | 語言管理（languages_list／language_add／language_patch／language_delete）；語言清單改讀資料庫
 // v0.5.0 | 2026-11-19 | 類別管理（categories_list／category_add／category_patch／category_delete）；list 附 categoryOptions；category 必須是已存在的類別
 // v0.4.0 | 2026-11-19 | 國家管理（countries_list／country_add／country_patch／country_delete）；list 附 languageOptions
@@ -9,6 +10,8 @@
 // 只能做媒體庫的操作（列表、新增、改欄位、刪除、發放上傳通行證、登記版本、還原、下載連結）；
 // 沒有任何讀取保固登錄資料的路徑。所有欄位在這裡重新驗證，不信任呼叫端。
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
+import { PORTAL_TAG } from '@/lib/publicCache'
 import { verifyAdmin } from '@/lib/adminAuth'
 import {
   isMediaKind, isMediaScope, isUuid, normalizeSlug, type MediaKind, type MediaScope,
@@ -48,6 +51,15 @@ export async function POST(req: Request) {
   const actor = str(body.actor, 64) || 'erp'
   const id = body.id
 
+  const res = await run(body, actor, id)
+  // 有修改資料的操作：清除公開頁面的快取，專員改完馬上看得到
+  if (!READ_ONLY.has(String(body.op))) revalidateTag(PORTAL_TAG)
+  return res
+}
+
+const READ_ONLY = new Set(['list', 'upload_url', 'download_url', 'countries_list', 'categories_list', 'languages_list'])
+
+async function run(body: Body, actor: string, id: unknown): Promise<Response> {
   switch (body.op) {
     case 'list': {
       const items = await listAll()

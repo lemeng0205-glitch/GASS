@@ -1,3 +1,4 @@
+// v0.2.0 | 2026-11-26 | 電子模板預覽圖的簽名連結改為同時取得（原本逐張等待）
 // v0.1.0 | 2026-11-18 | 媒體庫資料存取（warranty_media_files / warranty_media_versions + bucket warranty-media）
 // 只能在伺服器端使用。所有放進網址的值（id、slug）都先驗證格式，不拼接使用者原文。
 import 'server-only'
@@ -221,16 +222,15 @@ export async function publishedTemplates(): Promise<PublicTemplate[]> {
   const v = await rest<Array<{ id: string; file_name: string; size_bytes: number }>>(
     `${VERS}?select=id,file_name,size_bytes&id=in.(${ids.join(',')})`)
   const by = new Map((v.data ?? []).map(x => [x.id, x]))
-  const out: PublicTemplate[] = []
-  for (const d of docs) {
+  // 預覽圖：1 小時有效的簽名連結（bucket 是私有的）；同時向 Storage 要，不再一張一張等
+  const out = await Promise.all(docs.map(async (d): Promise<PublicTemplate | null> => {
     const ver = by.get(d.current_version_id)
-    if (!ver) continue
-    // 預覽圖：1 小時有效的簽名連結（bucket 是私有的）
+    if (!ver) return null
     const cover_url = d.cover_path ? await storageSignedUrl(MEDIA_BUCKET, d.cover_path, 3600) : null
     const { cover_path: _c, ...rest0 } = d
-    out.push({ ...rest0, current_version_id: d.current_version_id, file_name: ver.file_name, size_bytes: Number(ver.size_bytes) || 0, cover_url })
-  }
-  return out
+    return { ...rest0, current_version_id: d.current_version_id, file_name: ver.file_name, size_bytes: Number(ver.size_bytes) || 0, cover_url }
+  }))
+  return out.filter((x): x is PublicTemplate => !!x)
 }
 
 export async function versionInfo(versionId: string): Promise<{ file_path: string; mime_type: string; file_name: string } | null> {

@@ -1,3 +1,4 @@
+// v0.7.0 | 2026-11-26 | 資料改用 lib/publicCache 的快取版本、並行查詢（原本開頁 4～5 秒）
 // v0.6.0 | 2026-11-19 | 地圖與國家按鈕改由資料庫的國家清單產生（專員可自己新增國家）
 // v0.5.0 | 2026-11-05 | 下方改為「台灣」大按鈕 + 各國小按鈕（日本、美國…全部進同一個海外頁），滑過國家按鈕時地圖對應的點亮起
 // v0.4.0 | 2026-11-05 | 首頁兩條軌道：台灣／海外。地圖顯示海外各地；語言依瀏覽器判斷
@@ -5,7 +6,8 @@
 // 保固承諾區塊：正式條款未提供前不顯示（避免公開頁出現「待提供」字樣）。
 import Link from 'next/link'
 import { COPY, OTHER_REGION } from '@/lib/portalConfig'
-import { getCountries, regionsFor } from '@/lib/countryDb'
+import { regionsFor } from '@/lib/countryDb'
+import { cachedCountries } from '@/lib/publicCache'
 import { getLang } from '@/lib/serverLang'
 import PortalHeader from '@/components/PortalHeader'
 import WorldMap from '@/components/WorldMap'
@@ -20,7 +22,7 @@ export default async function Home({ searchParams }: Props) {
   const q = explicitLang ? `?lang=${lang}` : ''
 
   // 台灣 + 啟用中的海外國家（專員在 ERP「國家管理」新增／停用，資料庫讀不到時用內建的 9 個）
-  const regions = regionsFor(await getCountries())
+  const regions = regionsFor(await cachedCountries())
   const taiwan = regions.find(r => r.track === 'tw')!
   const countries = regions.filter(r => r.track === 'intl')
 
