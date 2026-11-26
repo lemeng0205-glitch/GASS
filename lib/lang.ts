@@ -1,3 +1,4 @@
+// v0.1.2 | 2026-11-26 | 全球保固頁 /warranty 只有英文：一律 en（不看 ?lang 與 cookie），避免瀏覽器誤判語言跳出翻譯
 // v0.1.1 | 2026-11-18 | 國家頁 /country/<代碼> 預設英文
 // v0.1.0 | 2026-11-06 | 語言判斷（單一來源）：網址 ?lang= ＞ 使用者上次選的（cookie）＞ 該頁預設
 // 預設：台灣頁／保固登錄 = 中文；海外頁 = 英文；首頁 = 看瀏覽器語言（排第一的是中文就中文，其他英文）
@@ -9,6 +10,7 @@ export const LANG_HEADER = 'x-eip-lang'
 const asLang = (v: string | null | undefined): Lang | null => (v === 'zh' || v === 'en' ? v : null)
 
 export function resolveLang(pathname: string, param: string | null, cookie: string | null | undefined, accept: string | null): Lang {
+  if (pathname === '/warranty' || pathname.startsWith('/warranty/')) return 'en'
   const explicit = asLang(param) ?? asLang(cookie)
   if (explicit) return explicit
   if (pathname === '/tw' || pathname.startsWith('/tw/') || pathname.startsWith('/register')) return 'zh'
