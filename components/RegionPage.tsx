@@ -1,3 +1,4 @@
+// v0.9.0 | 2026-11-26 | 傳入 warranty 時，「保固登錄」卡片改為在頁面內顯示表單（#warranty）
 // v0.8.0 | 2026-11-19 | 「產品說明書」「電子模板」卡片改為切換下方內容（RegionBody）；電子模板清單由媒體庫自動產生
 // v0.7.0 | 2026-11-18 | 說明書清單改由呼叫端傳入（依國家從媒體庫自動產生，見 lib/catalog.ts）
 // v0.6.0 | 2026-11-06 | 移除標題上方的「eiP Service」小字
@@ -14,11 +15,15 @@ import type { TemplateItem } from '@/lib/templates'
 
 export default function RegionPage(props: {
   lang: PortalLang; path: string; title: L10n; sub: L10n; links: QuickLink[]; groups: ManualGroup[]; templates?: TemplateItem[]
+  warranty?: { products: { category: string; name: string }[]; supportEmail?: string }
 }) {
   const { lang, path, title, sub, groups } = props
   const templates = props.templates ?? []
   // 有上傳電子模板就捲到下方清單；還沒上傳時沿用原本的外部連結
-  const links = templates.length ? props.links.map(l => (l.key === 'templates' ? { ...l, href: '#templates' } : l)) : props.links
+  const links = props.links.map(l =>
+    l.key === 'templates' && templates.length ? { ...l, href: '#templates' }
+    : l.key === 'warranty' && props.warranty ? { ...l, href: '#warranty' }
+    : l)
   const q = `?lang=${lang}`
   return (
     <>
@@ -38,7 +43,7 @@ export default function RegionPage(props: {
         {/* 點「產品說明書」「電子模板」卡片 → 下方內容切換（RegionBody 是 client component） */}
         <RegionBody lang={lang} links={links} groups={groups} templates={templates}
           manualsTitle={COPY.manuals[lang]} templatesTitle={COPY.templates[lang]}
-          openLabel={COPY.openManual[lang]} downloadLabel={COPY.download[lang]} />
+          openLabel={COPY.openManual[lang]} downloadLabel={COPY.download[lang]} warranty={props.warranty} />
       </main>
       <footer className="border-t border-[var(--rule)] py-8 text-center text-[11px] tracking-[0.2em] text-[var(--muted)]">
         © {new Date().getFullYear()} LEMENG · eiP

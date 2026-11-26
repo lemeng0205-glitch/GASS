@@ -1,5 +1,6 @@
-// v0.2.0 | 2026-11-26 | 產品選單改由頁面傳入（資料庫 warranty_products）
 'use client'
+// v0.3.0 | 2026-11-26 | 可嵌入各國服務頁（onSwitch）：完成畫面的按鈕改為切換表單，不換頁
+// v0.2.0 | 2026-11-26 | 產品選單改由頁面傳入（資料庫 warranty_products）
 // v0.1.0 | 2026-11-25 | 全球保固頁（海外）表單：保固登錄、諮詢維修。特效移植自業務畫面參考（依序浮現、游標柔光、進度線、按鈕光澤、打勾＋編號翻出＋彩紙）
 // 送出到本站 API（/api/warranty/global/*），瀏覽器不接觸資料庫。失敗時保留已填內容。
 import Link from 'next/link'
@@ -65,7 +66,11 @@ const CONF = {
   claim: { fields: CLAIM_FIELDS, api: '/api/warranty/global/claim', submit: 'Send request', doneTitle: 'We have received your request', codeLabel: 'Request number' },
 }
 
-export default function GlobalForm({ mode, products }: { mode: Mode; products: { category: string; name: string }[] }) {
+export default function GlobalForm({ mode, products, onSwitch }: {
+  mode: Mode; products: { category: string; name: string }[]
+  /** 嵌入在各國服務頁時傳入：完成畫面的按鈕改成切換到另一個表單（不換頁） */
+  onSwitch?: (to: Mode) => void
+}) {
   const base = CONF[mode]
   const conf = useMemo(() => ({
     ...base,
@@ -134,9 +139,10 @@ export default function GlobalForm({ mode, products }: { mode: Mode; products: {
     if (!done) return
     doneRef.current?.focus({ preventScroll: true })
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+    if (onSwitch) doneRef.current?.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' })
+    else window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
     if (!reduce) { const t = setTimeout(confetti, 650); return () => clearTimeout(t) }
-  }, [done])
+  }, [done, onSwitch])
 
   if (done) {
     const label = (f: Field, v: string) => f.options?.find(o => o.value === v)?.label ?? v
@@ -159,10 +165,13 @@ export default function GlobalForm({ mode, products }: { mode: Mode; products: {
         </div>
         <dl>{rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
         <div className="actions">
-          {mode === 'register'
+          {onSwitch ? (mode === 'register'
+            ? <button type="button" className="wbtn" onClick={() => { helpPrefill(); onSwitch('claim') }}>Need help with this product?</button>
+            : <button type="button" className="wbtn" onClick={() => onSwitch('register')}>Register a product</button>)
+          : <>{mode === 'register'
             ? <Link href="/warranty/support" className="wbtn" onClick={helpPrefill}>Need help with this product?</Link>
             : <Link href="/warranty/register" className="wbtn">Register a product</Link>}
-          <Link href="/warranty" className="wbtn ghost">Back to Warranty &amp; Support</Link>
+          <Link href="/warranty" className="wbtn ghost">Back to Warranty &amp; Support</Link></>}
         </div>
       </section>
     )

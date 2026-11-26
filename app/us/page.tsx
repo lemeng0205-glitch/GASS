@@ -1,3 +1,4 @@
+// v0.6.0 | 2026-11-26 | 保固表單嵌在頁面內（同 /country/us）
 // v0.5.0 | 2026-11-26 | 資料改用 lib/publicCache 的快取版本、並行查詢（原本開頁 4～5 秒）
 // v0.4.0 | 2026-11-18 | 舊網址保留：內容同 /country/us（美國）；說明書清單由媒體庫自動產生
 // v0.3.0 | 2026-11-06 | 語言改由 getLang() 取得（網址 ＞ 使用者上次選擇 ＞ 預設英文）
@@ -7,9 +8,11 @@ import RegionPage from '@/components/RegionPage'
 import { COPY, US_LINKS } from '@/lib/portalConfig'
 import { cachedCatalog } from '@/lib/publicCache'
 import { getLang } from '@/lib/serverLang'
+import { getOnSaleProducts } from '@/lib/globalWarrantyProducts'
 
 export default async function Page() {
   const lang = await getLang()
-  const groups = await cachedCatalog('us', lang)
-  return <RegionPage lang={lang} path="/us" title={COPY.usTitle} sub={COPY.usSub} links={US_LINKS} groups={groups} />
+  const [groups, products] = await Promise.all([cachedCatalog('us', lang), getOnSaleProducts()])
+  const warranty = { products, supportEmail: process.env.WARRANTY_SUPPORT_EMAIL?.trim() || undefined }
+  return <RegionPage lang={lang} path="/us" title={COPY.usTitle} sub={COPY.usSub} links={US_LINKS} groups={groups} warranty={warranty} />
 }

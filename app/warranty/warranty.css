@@ -1,3 +1,4 @@
+/* v0.3.0 | 2026-11-26 | 新增嵌入各國服務頁用的樣式（.wty-embed、.seg 分頁切換） */
 /* v0.1.0 | 2026-11-25 | 全球保固頁（海外）樣式：移植自業務畫面參考 warranty.css，全部限定在 .wty 底下，不影響其他頁 */
 .wty{--link:#6b5f4b;--error:#a23b31;--error-bg:#f8e9e6;--ok:#4f6b55;position:relative;isolation:isolate}
 
@@ -127,3 +128,12 @@
   .wty .rise,.wty .regno span{opacity:1;transform:none}
   .wty .check circle,.wty .check path{stroke-dashoffset:0}
 }
+
+/* 嵌入各國服務頁（components/warranty/WarrantyPanel.tsx） */
+.wty-embed{max-width:620px;margin:0 auto}
+.wty .seg{display:flex;gap:4px;padding:4px;margin:0 auto 14px;width:fit-content;border-radius:999px;background:rgba(255,255,255,.62);border:1px solid var(--rule)}
+.wty .seg button{padding:9px 20px;border:0;border-radius:999px;background:none;font:inherit;font-weight:600;color:var(--soft);cursor:pointer;transition:background .25s,color .25s}
+.wty .seg button:hover{color:var(--ink)}
+.wty .seg button[aria-selected=true]{background:var(--ink);color:var(--accent-ink)}
+.wty-embed .lead{text-align:center;margin:0 0 18px}
+.wty-embed .helper{margin-top:22px}

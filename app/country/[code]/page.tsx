@@ -1,3 +1,4 @@
+// v0.3.0 | 2026-11-26 | 保固登錄／諮詢維修表單直接嵌在頁面內（產品清單讀 warranty_products）
 // v0.2.0 | 2026-11-26 | 資料改用 lib/publicCache 的快取版本、並行查詢（原本開頁 4～5 秒）
 // v0.1.0 | 2026-11-18 | 各國服務頁 /country/<代碼>：顯示專員指定給該國的說明書（沒有專屬版本的產品用「全部海外」版）
 // /country/intl = 地圖上沒列出的其他國家，只顯示「全部海外」的說明書。
@@ -8,6 +9,7 @@ import { COPY, US_LINKS, type L10n } from '@/lib/portalConfig'
 import { INTL, countryName, isCountryPage, type Country } from '@/lib/countries'
 import { cachedCatalog, cachedCountries, cachedTemplates } from '@/lib/publicCache'
 import { getLang } from '@/lib/serverLang'
+import { getOnSaleProducts } from '@/lib/globalWarrantyProducts'
 
 type Props = { params: Promise<{ code: string }> }
 
@@ -28,6 +30,7 @@ export default async function Page({ params }: Props) {
   const list = await cachedCountries()
   if (!isCountryPage(code, list)) notFound()
   const lang = await getLang()
-  const [groups, templates] = await Promise.all([cachedCatalog(code, lang), cachedTemplates(code)])
-  return <RegionPage lang={lang} path={`/country/${code}`} title={titleFor(code, list)} sub={COPY.usSub} links={US_LINKS} groups={groups} templates={templates} />
+  const [groups, templates, products] = await Promise.all([cachedCatalog(code, lang), cachedTemplates(code), getOnSaleProducts()])
+  const warranty = { products, supportEmail: process.env.WARRANTY_SUPPORT_EMAIL?.trim() || undefined }
+  return <RegionPage lang={lang} path={`/country/${code}`} title={titleFor(code, list)} sub={COPY.usSub} links={US_LINKS} groups={groups} templates={templates} warranty={warranty} />
 }
