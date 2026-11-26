@@ -1,3 +1,4 @@
+// v0.3.1 | 2026-11-26 | 帳號、密碼、寄件地址去掉前後空白（避免 Vercel 貼上多帶空白造成登入失敗）
 // v0.3.0 | 2026-11-25 | 放進專案：Mailcloud 連線放在這裡（本站沒有既有的 mailTransport）；寄信紀錄用 lib/supabaseRest 的 rest() 寫入
 // v0.2.0 | 2026-11-25 | （業務草稿）新增 kind claim_staff_notify 與 replyTo 參數
 // v0.1.0 | 2026-11-24 | （業務草稿）寄信唯一入口：寄信 + 寫入 warranty_mail_log
@@ -24,8 +25,9 @@ export function warrantyMailIdentity(): { supportEmail: string; senderName: stri
 
 let cached: nodemailer.Transporter | null = null
 function transport() {
-  const user = process.env.MAILCLOUD_USER
-  const pass = process.env.MAILCLOUD_PASSWORD
+  // 去掉前後空白與換行（在 Vercel 貼上時常多帶，會造成 504 Authentication failed）
+  const user = process.env.MAILCLOUD_USER?.trim()
+  const pass = process.env.MAILCLOUD_PASSWORD?.trim()
   if (!user || !pass) throw new Error('missing Mailcloud env')
   cached ??= nodemailer.createTransport({
     host: 'ms.mailcloud.com.tw', port: 465, secure: true, auth: { user, pass },
@@ -35,7 +37,7 @@ function transport() {
 }
 
 function fromHeader(): string {
-  const address = process.env.WARRANTY_MAIL_FROM || process.env.MAILCLOUD_FROM || process.env.MAILCLOUD_USER
+  const address = (process.env.WARRANTY_MAIL_FROM || process.env.MAILCLOUD_FROM || process.env.MAILCLOUD_USER || '').trim()
   const name = (process.env.WARRANTY_MAIL_FROM_NAME || 'eiP Support').replace(/["\r\n]/g, '')
   return `"${name}" <${address}>`
 }
